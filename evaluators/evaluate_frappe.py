@@ -491,8 +491,8 @@ class FrappeEvaluator:
 
 if __name__ == '__main__':
     config = {
-        'test_path': './data/frappe/frappe_test.csv',
-        'train_path': './data/frappe/frappe_train.csv',
+        'test_path': './datasets/frappe/frappe_test.csv',
+        'train_path': './datasets/frappe/frappe_train.csv',
         'results_dir': './outputs/frappe',
         'output_dir': './results/frappe/context_metrics',
         'cutoffs': [5, 10, 20],

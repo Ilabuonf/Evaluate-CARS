@@ -52,7 +52,7 @@ class BGGPipeline(BasePipeline):
         }
     
     def _load_dataset_splits(self):
-        """Load pre-split BGG data"""
+        """Load pre-split BGG data and reconstruct categorical context"""
         data_path = Path(self.config['paths']['data'])
         
         dtypes = {
@@ -62,18 +62,41 @@ class BGGPipeline(BasePipeline):
             'rating:float': 'float32'
         }
         
-        # Load splits
+        # 1. Caricamento base
         self.train_df = pd.read_csv(data_path / 'train_df.tsv', sep='\t', dtype=dtypes)
         self.valid_df = pd.read_csv(data_path / 'valid_df.tsv', sep='\t', dtype=dtypes)
         self.test_df = pd.read_csv(data_path / 'test_df.tsv', sep='\t', dtype=dtypes)
-        
-        # Create binary label from rating
+
+        # 2. Gestione Contesto
+        if (data_path / 'context_info.tsv').exists():
+            context_info = pd.read_csv(data_path / 'context_info.tsv', sep='\t')
+            
+            # Funzione per collassare le colonne One-Hot in una categorica
+            def collapse_onehot(df, prefix, new_name):
+                # Prende le colonne che iniziano con il prefisso (es. 'playing_time_')
+                cols = [c for c in df.columns if c.startswith(prefix)]
+                if not cols: return df
+                # Trova quale colonna ha valore 1.0 per ogni riga e ne estrae il nome
+                df[new_name] = df[cols].idxmax(axis=1).str.replace(prefix, "").str.replace(":float", "")
+                return df
+
+            # Trasformiamo le colonne One-Hot nelle 3 colonne richieste dalla pipeline
+            context_info = collapse_onehot(context_info, "playing_time_", "playing_time")
+            context_info = collapse_onehot(context_info, "gaming_mood_", "gaming_mood")
+            context_info = collapse_onehot(context_info, "social_companion_", "social_companion")
+
+            # Merge dei dati puliti
+            self.train_df = self.train_df.merge(context_info[['context_id', 'playing_time', 'gaming_mood', 'social_companion']], on='context_id', how='left')
+            self.valid_df = self.valid_df.merge(context_info[['context_id', 'playing_time', 'gaming_mood', 'social_companion']], on='context_id', how='left')
+            self.test_df = self.test_df.merge(context_info[['context_id', 'playing_time', 'gaming_mood', 'social_companion']], on='context_id', how='left')
+            print("  ✓ Context columns reconstructed from One-Hot format")
+
+        # 3. Target binario
         rating_threshold = self.config.get('rating_threshold', 7.0)
         for df in [self.train_df, self.valid_df, self.test_df]:
             df['label'] = (df['rating:float'] >= rating_threshold).astype(int)
         
-        # Load context info
-        self.context_info = pd.read_csv(data_path / 'context_info.tsv', sep='\t')
+        self.context_info = context_info
 
 
 def main():

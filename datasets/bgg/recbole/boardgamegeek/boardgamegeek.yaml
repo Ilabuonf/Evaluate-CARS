@@ -1,0 +1,16 @@
+ITEM_ID_FIELD: item_id
+LABEL_FIELD: label
+USER_ID_FIELD: user_id
+additional_feat_suffix:
+- token
+field_separator: "\t"
+item_inter_num_interval: '[0,inf)'
+load_col:
+  inter:
+  - user_id
+  - item_id
+  - label
+  - playing_time
+  - gaming_mood
+  - social_companion
+user_inter_num_interval: '[0,inf)'

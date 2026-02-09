@@ -3,8 +3,8 @@
 
 # Path configuration
 paths:
-  data: "data/frappe"  # Directory containing frappe_train.csv, frappe_valid.csv, frappe_test.csv
-  output_base: "output/frappe"  # Base directory for all outputs
+  data: ./datasets/frappe  # Directory containing frappe_train.csv, frappe_valid.csv, frappe_test.csv
+  output_base: ./outputs/frappe  # Base directory for all outputs
 
 # Training configuration
 training:

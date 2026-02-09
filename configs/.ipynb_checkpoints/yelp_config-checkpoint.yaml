@@ -3,8 +3,8 @@
 
 # Dataset paths
 paths:
-  data: "./data/yelp"           # Path to Yelp data files
-  output_base: "./results/yelp"  # Base path for results
+  data: ./datasets/yelp         # Path to Yelp data files
+  output_base: ./outputs/yelp  # Base path for results
 
 # Data processing
 data:

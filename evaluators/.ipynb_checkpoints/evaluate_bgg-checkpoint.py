@@ -743,8 +743,8 @@ class BGGEvaluator:
 
 if __name__ == '__main__':
     config = {
-        'test_path': './data/test_df.tsv',
-        'context_info_path': './data/context_info.tsv',
+        'test_path': './datasets/bgg/test_df.tsv',
+        'context_info_path': './datasets/bgg/context_info.tsv',
         'results_dir': './outputs',
         'output_dir': './results/bgg/context_metrics',
         'cutoffs': [5, 10, 20],

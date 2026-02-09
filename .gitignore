@@ -1,0 +1,8 @@
+# Ignora i modelli e le predizioni pesanti
+outputs/
+*.pth
+*.inter
+
+# Ignora i file di sistema
+__pycache__/
+.DS_Store

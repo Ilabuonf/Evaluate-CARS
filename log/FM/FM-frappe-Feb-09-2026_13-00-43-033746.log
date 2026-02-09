@@ -1,0 +1,1487 @@
+Mon 09 Feb 2026 13:00:43 INFO  ['/home/bari/Evaluate-CARS/src/pipelines/frappe_pipeline.py']
+Mon 09 Feb 2026 13:00:43 INFO  
+General Hyper Parameters:
+gpu_id = 0
+use_gpu = True
+seed = 2024
+state = INFO
+reproducibility = True
+data_path = datasets/frappe/recbole/frappe
+checkpoint_dir = outputs/frappe/fm
+show_progress = True
+save_dataset = False
+dataset_save_path = None
+save_dataloaders = False
+dataloaders_save_path = None
+log_wandb = False
+
+Training Hyper Parameters:
+epochs = 50
+train_batch_size = 2048
+learner = adam
+learning_rate = 0.001
+train_neg_sample_args = {'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}
+eval_step = 1
+stopping_step = 10
+clip_grad_norm = None
+weight_decay = 0.0
+loss_decimal_place = 4
+
+Evaluation Hyper Parameters:
+eval_args = {'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}
+repeatable = False
+metrics = ['AUC', 'LogLoss']
+topk = [10]
+valid_metric = AUC
+valid_metric_bigger = True
+eval_batch_size = 4096
+metric_decimal_place = 4
+
+Dataset Hyper Parameters:
+field_separator = 	
+seq_separator =  
+USER_ID_FIELD = user_id
+ITEM_ID_FIELD = item_id
+RATING_FIELD = rating
+TIME_FIELD = timestamp
+seq_len = None
+LABEL_FIELD = label
+threshold = None
+NEG_PREFIX = neg_
+load_col = {'inter': ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']}
+unload_col = None
+unused_col = None
+additional_feat_suffix = None
+rm_dup_inter = None
+val_interval = None
+filter_inter_by_user_or_item = True
+user_inter_num_interval = [0,inf)
+item_inter_num_interval = [0,inf)
+alias_of_user_id = None
+alias_of_item_id = None
+alias_of_entity_id = None
+alias_of_relation_id = None
+preload_weight = None
+normalize_field = None
+normalize_all = None
+ITEM_LIST_LENGTH_FIELD = item_length
+LIST_SUFFIX = _list
+MAX_ITEM_LIST_LENGTH = 50
+POSITION_FIELD = position_id
+HEAD_ENTITY_ID_FIELD = head_id
+TAIL_ENTITY_ID_FIELD = tail_id
+RELATION_ID_FIELD = relation_id
+ENTITY_ID_FIELD = entity_id
+benchmark_filename = ['train', 'valid', 'test']
+
+Other Hyper Parameters: 
+worker = 0
+wandb_project = recbole
+shuffle = True
+require_pow = False
+enable_amp = False
+enable_scaler = False
+transform = None
+embedding_size = 64
+numerical_features = []
+discretization = None
+kg_reverse_r = False
+entity_kg_num_interval = [0,inf)
+relation_kg_num_interval = [0,inf)
+MODEL_TYPE = ModelType.CONTEXT
+reg_weight = 0.0001
+device = cuda
+MODEL_INPUT_TYPE = InputType.POINTWISE
+eval_type = EvaluatorType.VALUE
+single_spec = True
+local_rank = 0
+valid_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+test_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+
+
+Mon 09 Feb 2026 13:00:45 INFO  frappe
+The number of users: 958
+Average actions of users: 301.576802507837
+The number of items: 4083
+Average actions of items: 70.70284174424302
+The number of inters: 288609
+The sparsity of the dataset: 92.62155267755656%
+Remain Fields: ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']
+Mon 09 Feb 2026 13:00:45 INFO  [Training]: train_batch_size = [2048] train_neg_sample_args: [{'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}]
+Mon 09 Feb 2026 13:00:45 INFO  [Evaluation]: eval_batch_size = [4096] eval_args: [{'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}]
+Mon 09 Feb 2026 13:00:45 INFO  FM(
+  (token_embedding_table): FMEmbedding(
+    (embedding): Embedding(5392, 64)
+  )
+  (first_order_linear): FMFirstOrderLinear(
+    (token_embedding_table): FMEmbedding(
+      (embedding): Embedding(5392, 1)
+    )
+  )
+  (fm): BaseFactorizationMachine()
+  (sigmoid): Sigmoid()
+  (loss): BCEWithLogitsLoss()
+)
+Trainable parameters: 350481
+Mon 09 Feb 2026 13:00:45 INFO  FLOPs: 650.0
+Mon 09 Feb 2026 13:00:47 INFO  epoch 0 training [time: 0.98s, train loss: 58.0616]
+Mon 09 Feb 2026 13:00:47 INFO  epoch 0 evaluating [time: 0.17s, valid_score: 0.918500]
+Mon 09 Feb 2026 13:00:47 INFO  valid result: 
+auc : 0.9185    logloss : 0.4326
+Mon 09 Feb 2026 13:00:47 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:48 INFO  epoch 1 training [time: 0.78s, train loss: 32.4429]
+Mon 09 Feb 2026 13:00:48 INFO  epoch 1 evaluating [time: 0.17s, valid_score: 0.937600]
+Mon 09 Feb 2026 13:00:48 INFO  valid result: 
+auc : 0.9376    logloss : 0.286
+Mon 09 Feb 2026 13:00:48 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:48 INFO  epoch 2 training [time: 0.75s, train loss: 26.3806]
+Mon 09 Feb 2026 13:00:49 INFO  epoch 2 evaluating [time: 0.17s, valid_score: 0.940900]
+Mon 09 Feb 2026 13:00:49 INFO  valid result: 
+auc : 0.9409    logloss : 0.2715
+Mon 09 Feb 2026 13:00:49 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:49 INFO  epoch 3 training [time: 0.77s, train loss: 24.7760]
+Mon 09 Feb 2026 13:00:50 INFO  epoch 3 evaluating [time: 0.17s, valid_score: 0.944400]
+Mon 09 Feb 2026 13:00:50 INFO  valid result: 
+auc : 0.9444    logloss : 0.2625
+Mon 09 Feb 2026 13:00:50 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:50 INFO  epoch 4 training [time: 0.77s, train loss: 23.4330]
+Mon 09 Feb 2026 13:00:51 INFO  epoch 4 evaluating [time: 0.17s, valid_score: 0.947500]
+Mon 09 Feb 2026 13:00:51 INFO  valid result: 
+auc : 0.9475    logloss : 0.2542
+Mon 09 Feb 2026 13:00:51 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:51 INFO  epoch 5 training [time: 0.76s, train loss: 22.0168]
+Mon 09 Feb 2026 13:00:51 INFO  epoch 5 evaluating [time: 0.17s, valid_score: 0.951200]
+Mon 09 Feb 2026 13:00:51 INFO  valid result: 
+auc : 0.9512    logloss : 0.2447
+Mon 09 Feb 2026 13:00:51 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:52 INFO  epoch 6 training [time: 0.84s, train loss: 20.6175]
+Mon 09 Feb 2026 13:00:52 INFO  epoch 6 evaluating [time: 0.19s, valid_score: 0.954600]
+Mon 09 Feb 2026 13:00:52 INFO  valid result: 
+auc : 0.9546    logloss : 0.2358
+Mon 09 Feb 2026 13:00:52 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:53 INFO  epoch 7 training [time: 0.88s, train loss: 19.2365]
+Mon 09 Feb 2026 13:00:54 INFO  epoch 7 evaluating [time: 0.18s, valid_score: 0.957700]
+Mon 09 Feb 2026 13:00:54 INFO  valid result: 
+auc : 0.9577    logloss : 0.227
+Mon 09 Feb 2026 13:00:54 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:54 INFO  epoch 8 training [time: 0.88s, train loss: 17.9106]
+Mon 09 Feb 2026 13:00:55 INFO  epoch 8 evaluating [time: 0.18s, valid_score: 0.960500]
+Mon 09 Feb 2026 13:00:55 INFO  valid result: 
+auc : 0.9605    logloss : 0.2191
+Mon 09 Feb 2026 13:00:55 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:56 INFO  epoch 9 training [time: 0.88s, train loss: 16.6890]
+Mon 09 Feb 2026 13:00:56 INFO  epoch 9 evaluating [time: 0.19s, valid_score: 0.962700]
+Mon 09 Feb 2026 13:00:56 INFO  valid result: 
+auc : 0.9627    logloss : 0.2129
+Mon 09 Feb 2026 13:00:56 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:57 INFO  epoch 10 training [time: 0.90s, train loss: 15.5803]
+Mon 09 Feb 2026 13:00:57 INFO  epoch 10 evaluating [time: 0.18s, valid_score: 0.964500]
+Mon 09 Feb 2026 13:00:57 INFO  valid result: 
+auc : 0.9645    logloss : 0.2067
+Mon 09 Feb 2026 13:00:57 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:58 INFO  epoch 11 training [time: 0.86s, train loss: 14.5723]
+Mon 09 Feb 2026 13:00:58 INFO  epoch 11 evaluating [time: 0.18s, valid_score: 0.965900]
+Mon 09 Feb 2026 13:00:58 INFO  valid result: 
+auc : 0.9659    logloss : 0.2022
+Mon 09 Feb 2026 13:00:58 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:00:59 INFO  epoch 12 training [time: 0.88s, train loss: 13.6557]
+Mon 09 Feb 2026 13:00:59 INFO  epoch 12 evaluating [time: 0.18s, valid_score: 0.967300]
+Mon 09 Feb 2026 13:00:59 INFO  valid result: 
+auc : 0.9673    logloss : 0.1976
+Mon 09 Feb 2026 13:00:59 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:00 INFO  epoch 13 training [time: 0.86s, train loss: 12.8076]
+Mon 09 Feb 2026 13:01:00 INFO  epoch 13 evaluating [time: 0.19s, valid_score: 0.968200]
+Mon 09 Feb 2026 13:01:00 INFO  valid result: 
+auc : 0.9682    logloss : 0.1948
+Mon 09 Feb 2026 13:01:00 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:01 INFO  epoch 14 training [time: 0.85s, train loss: 12.0390]
+Mon 09 Feb 2026 13:01:01 INFO  epoch 14 evaluating [time: 0.19s, valid_score: 0.969100]
+Mon 09 Feb 2026 13:01:01 INFO  valid result: 
+auc : 0.9691    logloss : 0.1916
+Mon 09 Feb 2026 13:01:01 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:02 INFO  epoch 15 training [time: 0.78s, train loss: 11.3758]
+Mon 09 Feb 2026 13:01:02 INFO  epoch 15 evaluating [time: 0.18s, valid_score: 0.969900]
+Mon 09 Feb 2026 13:01:02 INFO  valid result: 
+auc : 0.9699    logloss : 0.1891
+Mon 09 Feb 2026 13:01:02 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:03 INFO  epoch 16 training [time: 0.86s, train loss: 10.7135]
+Mon 09 Feb 2026 13:01:03 INFO  epoch 16 evaluating [time: 0.15s, valid_score: 0.970400]
+Mon 09 Feb 2026 13:01:03 INFO  valid result: 
+auc : 0.9704    logloss : 0.1872
+Mon 09 Feb 2026 13:01:03 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:04 INFO  epoch 17 training [time: 0.88s, train loss: 10.1163]
+Mon 09 Feb 2026 13:01:04 INFO  epoch 17 evaluating [time: 0.15s, valid_score: 0.971100]
+Mon 09 Feb 2026 13:01:04 INFO  valid result: 
+auc : 0.9711    logloss : 0.1851
+Mon 09 Feb 2026 13:01:04 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:05 INFO  epoch 18 training [time: 0.88s, train loss: 9.5635]
+Mon 09 Feb 2026 13:01:05 INFO  epoch 18 evaluating [time: 0.14s, valid_score: 0.971600]
+Mon 09 Feb 2026 13:01:05 INFO  valid result: 
+auc : 0.9716    logloss : 0.184
+Mon 09 Feb 2026 13:01:05 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:06 INFO  epoch 19 training [time: 0.86s, train loss: 9.0382]
+Mon 09 Feb 2026 13:01:06 INFO  epoch 19 evaluating [time: 0.15s, valid_score: 0.971800]
+Mon 09 Feb 2026 13:01:06 INFO  valid result: 
+auc : 0.9718    logloss : 0.1831
+Mon 09 Feb 2026 13:01:06 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:07 INFO  epoch 20 training [time: 0.90s, train loss: 8.5798]
+Mon 09 Feb 2026 13:01:07 INFO  epoch 20 evaluating [time: 0.15s, valid_score: 0.972100]
+Mon 09 Feb 2026 13:01:07 INFO  valid result: 
+auc : 0.9721    logloss : 0.1828
+Mon 09 Feb 2026 13:01:07 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:08 INFO  epoch 21 training [time: 0.87s, train loss: 8.1115]
+Mon 09 Feb 2026 13:01:08 INFO  epoch 21 evaluating [time: 0.14s, valid_score: 0.972400]
+Mon 09 Feb 2026 13:01:08 INFO  valid result: 
+auc : 0.9724    logloss : 0.1819
+Mon 09 Feb 2026 13:01:08 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:09 INFO  epoch 22 training [time: 0.83s, train loss: 7.6805]
+Mon 09 Feb 2026 13:01:09 INFO  epoch 22 evaluating [time: 0.18s, valid_score: 0.972700]
+Mon 09 Feb 2026 13:01:09 INFO  valid result: 
+auc : 0.9727    logloss : 0.1814
+Mon 09 Feb 2026 13:01:09 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:10 INFO  epoch 23 training [time: 0.73s, train loss: 7.3012]
+Mon 09 Feb 2026 13:01:10 INFO  epoch 23 evaluating [time: 0.17s, valid_score: 0.973000]
+Mon 09 Feb 2026 13:01:10 INFO  valid result: 
+auc : 0.973    logloss : 0.1811
+Mon 09 Feb 2026 13:01:10 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:11 INFO  epoch 24 training [time: 0.85s, train loss: 6.9240]
+Mon 09 Feb 2026 13:01:11 INFO  epoch 24 evaluating [time: 0.19s, valid_score: 0.973200]
+Mon 09 Feb 2026 13:01:11 INFO  valid result: 
+auc : 0.9732    logloss : 0.181
+Mon 09 Feb 2026 13:01:11 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:12 INFO  epoch 25 training [time: 0.86s, train loss: 6.5777]
+Mon 09 Feb 2026 13:01:12 INFO  epoch 25 evaluating [time: 0.19s, valid_score: 0.973300]
+Mon 09 Feb 2026 13:01:12 INFO  valid result: 
+auc : 0.9733    logloss : 0.1812
+Mon 09 Feb 2026 13:01:12 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:13 INFO  epoch 26 training [time: 0.88s, train loss: 6.2501]
+Mon 09 Feb 2026 13:01:13 INFO  epoch 26 evaluating [time: 0.19s, valid_score: 0.973600]
+Mon 09 Feb 2026 13:01:13 INFO  valid result: 
+auc : 0.9736    logloss : 0.1813
+Mon 09 Feb 2026 13:01:13 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:14 INFO  epoch 27 training [time: 0.90s, train loss: 5.9365]
+Mon 09 Feb 2026 13:01:14 INFO  epoch 27 evaluating [time: 0.18s, valid_score: 0.973600]
+Mon 09 Feb 2026 13:01:14 INFO  valid result: 
+auc : 0.9736    logloss : 0.182
+Mon 09 Feb 2026 13:01:14 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:15 INFO  epoch 28 training [time: 0.89s, train loss: 5.6487]
+Mon 09 Feb 2026 13:01:15 INFO  epoch 28 evaluating [time: 0.15s, valid_score: 0.973800]
+Mon 09 Feb 2026 13:01:15 INFO  valid result: 
+auc : 0.9738    logloss : 0.1822
+Mon 09 Feb 2026 13:01:15 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:16 INFO  epoch 29 training [time: 0.88s, train loss: 5.3630]
+Mon 09 Feb 2026 13:01:17 INFO  epoch 29 evaluating [time: 0.14s, valid_score: 0.974000]
+Mon 09 Feb 2026 13:01:17 INFO  valid result: 
+auc : 0.974    logloss : 0.1825
+Mon 09 Feb 2026 13:01:17 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:17 INFO  epoch 30 training [time: 0.86s, train loss: 5.1085]
+Mon 09 Feb 2026 13:01:18 INFO  epoch 30 evaluating [time: 0.15s, valid_score: 0.974000]
+Mon 09 Feb 2026 13:01:18 INFO  valid result: 
+auc : 0.974    logloss : 0.1837
+Mon 09 Feb 2026 13:01:18 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:18 INFO  epoch 31 training [time: 0.86s, train loss: 4.8686]
+Mon 09 Feb 2026 13:01:19 INFO  epoch 31 evaluating [time: 0.15s, valid_score: 0.974200]
+Mon 09 Feb 2026 13:01:19 INFO  valid result: 
+auc : 0.9742    logloss : 0.1839
+Mon 09 Feb 2026 13:01:19 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:19 INFO  epoch 32 training [time: 0.82s, train loss: 4.6433]
+Mon 09 Feb 2026 13:01:20 INFO  epoch 32 evaluating [time: 0.17s, valid_score: 0.974300]
+Mon 09 Feb 2026 13:01:20 INFO  valid result: 
+auc : 0.9743    logloss : 0.1847
+Mon 09 Feb 2026 13:01:20 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:20 INFO  epoch 33 training [time: 0.87s, train loss: 4.4230]
+Mon 09 Feb 2026 13:01:21 INFO  epoch 33 evaluating [time: 0.19s, valid_score: 0.974300]
+Mon 09 Feb 2026 13:01:21 INFO  valid result: 
+auc : 0.9743    logloss : 0.1857
+Mon 09 Feb 2026 13:01:21 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:22 INFO  epoch 34 training [time: 0.88s, train loss: 4.2181]
+Mon 09 Feb 2026 13:01:22 INFO  epoch 34 evaluating [time: 0.19s, valid_score: 0.974500]
+Mon 09 Feb 2026 13:01:22 INFO  valid result: 
+auc : 0.9745    logloss : 0.1866
+Mon 09 Feb 2026 13:01:22 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:23 INFO  epoch 35 training [time: 0.86s, train loss: 4.0243]
+Mon 09 Feb 2026 13:01:23 INFO  epoch 35 evaluating [time: 0.18s, valid_score: 0.974600]
+Mon 09 Feb 2026 13:01:23 INFO  valid result: 
+auc : 0.9746    logloss : 0.1873
+Mon 09 Feb 2026 13:01:23 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:24 INFO  epoch 36 training [time: 0.85s, train loss: 3.8359]
+Mon 09 Feb 2026 13:01:24 INFO  epoch 36 evaluating [time: 0.19s, valid_score: 0.974500]
+Mon 09 Feb 2026 13:01:24 INFO  valid result: 
+auc : 0.9745    logloss : 0.1885
+Mon 09 Feb 2026 13:01:25 INFO  epoch 37 training [time: 0.89s, train loss: 3.6625]
+Mon 09 Feb 2026 13:01:25 INFO  epoch 37 evaluating [time: 0.18s, valid_score: 0.974600]
+Mon 09 Feb 2026 13:01:25 INFO  valid result: 
+auc : 0.9746    logloss : 0.1894
+Mon 09 Feb 2026 13:01:25 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:26 INFO  epoch 38 training [time: 0.88s, train loss: 3.4890]
+Mon 09 Feb 2026 13:01:26 INFO  epoch 38 evaluating [time: 0.15s, valid_score: 0.974700]
+Mon 09 Feb 2026 13:01:26 INFO  valid result: 
+auc : 0.9747    logloss : 0.1906
+Mon 09 Feb 2026 13:01:26 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:27 INFO  epoch 39 training [time: 0.90s, train loss: 3.3286]
+Mon 09 Feb 2026 13:01:27 INFO  epoch 39 evaluating [time: 0.14s, valid_score: 0.974800]
+Mon 09 Feb 2026 13:01:27 INFO  valid result: 
+auc : 0.9748    logloss : 0.1915
+Mon 09 Feb 2026 13:01:27 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:28 INFO  epoch 40 training [time: 0.88s, train loss: 3.1814]
+Mon 09 Feb 2026 13:01:28 INFO  epoch 40 evaluating [time: 0.15s, valid_score: 0.974900]
+Mon 09 Feb 2026 13:01:28 INFO  valid result: 
+auc : 0.9749    logloss : 0.1927
+Mon 09 Feb 2026 13:01:28 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:29 INFO  epoch 41 training [time: 0.84s, train loss: 3.0347]
+Mon 09 Feb 2026 13:01:29 INFO  epoch 41 evaluating [time: 0.17s, valid_score: 0.974900]
+Mon 09 Feb 2026 13:01:29 INFO  valid result: 
+auc : 0.9749    logloss : 0.1939
+Mon 09 Feb 2026 13:01:29 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:30 INFO  epoch 42 training [time: 0.86s, train loss: 2.9147]
+Mon 09 Feb 2026 13:01:30 INFO  epoch 42 evaluating [time: 0.15s, valid_score: 0.975000]
+Mon 09 Feb 2026 13:01:30 INFO  valid result: 
+auc : 0.975    logloss : 0.195
+Mon 09 Feb 2026 13:01:30 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:31 INFO  epoch 43 training [time: 0.86s, train loss: 2.7733]
+Mon 09 Feb 2026 13:01:31 INFO  epoch 43 evaluating [time: 0.15s, valid_score: 0.975000]
+Mon 09 Feb 2026 13:01:31 INFO  valid result: 
+auc : 0.975    logloss : 0.1962
+Mon 09 Feb 2026 13:01:31 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:32 INFO  epoch 44 training [time: 0.88s, train loss: 2.6508]
+Mon 09 Feb 2026 13:01:32 INFO  epoch 44 evaluating [time: 0.15s, valid_score: 0.975000]
+Mon 09 Feb 2026 13:01:32 INFO  valid result: 
+auc : 0.975    logloss : 0.1978
+Mon 09 Feb 2026 13:01:32 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:33 INFO  epoch 45 training [time: 0.87s, train loss: 2.5342]
+Mon 09 Feb 2026 13:01:33 INFO  epoch 45 evaluating [time: 0.14s, valid_score: 0.975100]
+Mon 09 Feb 2026 13:01:33 INFO  valid result: 
+auc : 0.9751    logloss : 0.1988
+Mon 09 Feb 2026 13:01:33 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:34 INFO  epoch 46 training [time: 0.85s, train loss: 2.4221]
+Mon 09 Feb 2026 13:01:34 INFO  epoch 46 evaluating [time: 0.14s, valid_score: 0.975100]
+Mon 09 Feb 2026 13:01:34 INFO  valid result: 
+auc : 0.9751    logloss : 0.2
+Mon 09 Feb 2026 13:01:34 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:35 INFO  epoch 47 training [time: 0.86s, train loss: 2.3119]
+Mon 09 Feb 2026 13:01:35 INFO  epoch 47 evaluating [time: 0.14s, valid_score: 0.975200]
+Mon 09 Feb 2026 13:01:35 INFO  valid result: 
+auc : 0.9752    logloss : 0.2014
+Mon 09 Feb 2026 13:01:35 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:36 INFO  epoch 48 training [time: 0.87s, train loss: 2.2161]
+Mon 09 Feb 2026 13:01:36 INFO  epoch 48 evaluating [time: 0.15s, valid_score: 0.975100]
+Mon 09 Feb 2026 13:01:36 INFO  valid result: 
+auc : 0.9751    logloss : 0.2029
+Mon 09 Feb 2026 13:01:37 INFO  epoch 49 training [time: 0.87s, train loss: 2.1185]
+Mon 09 Feb 2026 13:01:37 INFO  epoch 49 evaluating [time: 0.15s, valid_score: 0.975300]
+Mon 09 Feb 2026 13:01:37 INFO  valid result: 
+auc : 0.9753    logloss : 0.2043
+Mon 09 Feb 2026 13:01:37 INFO  Saving current: outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:37 INFO  Loading model structure and parameters from outputs/frappe/fm/FM-Feb-09-2026_13-00-45.pth
+Mon 09 Feb 2026 13:01:38 INFO  The running environment of this training is as follows:
++-------------+------------------+
+| Environment |      Usage       |
++=============+==================+
+| CPU         |      1.10 %      |
++-------------+------------------+
+| GPU         |  0.04 G/23.56 G  |
++-------------+------------------+
+| Memory      | 1.56 G/1006.54 G |
++-------------+------------------+
+Mon 09 Feb 2026 13:01:38 INFO  best valid : OrderedDict([('auc', 0.9753), ('logloss', 0.2043)])
+Mon 09 Feb 2026 13:01:38 INFO  test result: OrderedDict([('auc', 0.9732), ('logloss', 0.2154)])
+Mon 09 Feb 2026 13:01:38 INFO  ['/home/bari/Evaluate-CARS/src/pipelines/frappe_pipeline.py']
+Mon 09 Feb 2026 13:01:38 INFO  
+General Hyper Parameters:
+gpu_id = 0
+use_gpu = True
+seed = 2024
+state = INFO
+reproducibility = True
+data_path = datasets/frappe/recbole/frappe
+checkpoint_dir = outputs/frappe/ffm
+show_progress = True
+save_dataset = False
+dataset_save_path = None
+save_dataloaders = False
+dataloaders_save_path = None
+log_wandb = False
+
+Training Hyper Parameters:
+epochs = 50
+train_batch_size = 2048
+learner = adam
+learning_rate = 0.001
+train_neg_sample_args = {'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}
+eval_step = 1
+stopping_step = 10
+clip_grad_norm = None
+weight_decay = 0.0
+loss_decimal_place = 4
+
+Evaluation Hyper Parameters:
+eval_args = {'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}
+repeatable = False
+metrics = ['AUC', 'LogLoss']
+topk = [10]
+valid_metric = AUC
+valid_metric_bigger = True
+eval_batch_size = 4096
+metric_decimal_place = 4
+
+Dataset Hyper Parameters:
+field_separator = 	
+seq_separator =  
+USER_ID_FIELD = user_id
+ITEM_ID_FIELD = item_id
+RATING_FIELD = rating
+TIME_FIELD = timestamp
+seq_len = None
+LABEL_FIELD = label
+threshold = None
+NEG_PREFIX = neg_
+load_col = {'inter': ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']}
+unload_col = None
+unused_col = None
+additional_feat_suffix = None
+rm_dup_inter = None
+val_interval = None
+filter_inter_by_user_or_item = True
+user_inter_num_interval = [0,inf)
+item_inter_num_interval = [0,inf)
+alias_of_user_id = None
+alias_of_item_id = None
+alias_of_entity_id = None
+alias_of_relation_id = None
+preload_weight = None
+normalize_field = None
+normalize_all = None
+ITEM_LIST_LENGTH_FIELD = item_length
+LIST_SUFFIX = _list
+MAX_ITEM_LIST_LENGTH = 50
+POSITION_FIELD = position_id
+HEAD_ENTITY_ID_FIELD = head_id
+TAIL_ENTITY_ID_FIELD = tail_id
+RELATION_ID_FIELD = relation_id
+ENTITY_ID_FIELD = entity_id
+benchmark_filename = ['train', 'valid', 'test']
+
+Other Hyper Parameters: 
+worker = 0
+wandb_project = recbole
+shuffle = True
+require_pow = False
+enable_amp = False
+enable_scaler = False
+transform = None
+embedding_size = 64
+fields = None
+numerical_features = []
+discretization = None
+kg_reverse_r = False
+entity_kg_num_interval = [0,inf)
+relation_kg_num_interval = [0,inf)
+MODEL_TYPE = ModelType.CONTEXT
+reg_weight = 0.0001
+device = cuda
+MODEL_INPUT_TYPE = InputType.POINTWISE
+eval_type = EvaluatorType.VALUE
+single_spec = True
+local_rank = 0
+valid_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+test_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+
+
+Mon 09 Feb 2026 13:01:40 INFO  frappe
+The number of users: 958
+Average actions of users: 301.576802507837
+The number of items: 4083
+Average actions of items: 70.70284174424302
+The number of inters: 288609
+The sparsity of the dataset: 92.62155267755656%
+Remain Fields: ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']
+Mon 09 Feb 2026 13:01:40 INFO  [Training]: train_batch_size = [2048] train_neg_sample_args: [{'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}]
+Mon 09 Feb 2026 13:01:40 INFO  [Evaluation]: eval_batch_size = [4096] eval_args: [{'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}]
+Mon 09 Feb 2026 13:01:40 INFO  FFM(
+  (token_embedding_table): FMEmbedding(
+    (embedding): Embedding(5392, 64)
+  )
+  (first_order_linear): FMFirstOrderLinear(
+    (token_embedding_table): FMEmbedding(
+      (embedding): Embedding(5392, 1)
+    )
+  )
+  (sigmoid): Sigmoid()
+  (ffm): FieldAwareFactorizationMachine(
+    (token_embeddings): ModuleList(
+      (0-9): 10 x Embedding(5392, 64)
+    )
+  )
+  (loss): BCEWithLogitsLoss()
+)
+Trainable parameters: 3801361
+Mon 09 Feb 2026 13:01:40 INFO  FLOPs: 6410.0
+Mon 09 Feb 2026 13:01:44 INFO  epoch 0 training [time: 4.02s, train loss: 44.0389]
+Mon 09 Feb 2026 13:01:44 INFO  epoch 0 evaluating [time: 0.22s, valid_score: 0.937200]
+Mon 09 Feb 2026 13:01:44 INFO  valid result: 
+auc : 0.9372    logloss : 0.2794
+Mon 09 Feb 2026 13:01:44 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:01:48 INFO  epoch 1 training [time: 3.78s, train loss: 24.8262]
+Mon 09 Feb 2026 13:01:48 INFO  epoch 1 evaluating [time: 0.37s, valid_score: 0.951200]
+Mon 09 Feb 2026 13:01:48 INFO  valid result: 
+auc : 0.9512    logloss : 0.2443
+Mon 09 Feb 2026 13:01:49 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:01:53 INFO  epoch 2 training [time: 4.01s, train loss: 20.1160]
+Mon 09 Feb 2026 13:01:53 INFO  epoch 2 evaluating [time: 0.20s, valid_score: 0.962600]
+Mon 09 Feb 2026 13:01:53 INFO  valid result: 
+auc : 0.9626    logloss : 0.2104
+Mon 09 Feb 2026 13:01:53 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:01:57 INFO  epoch 3 training [time: 3.97s, train loss: 15.5500]
+Mon 09 Feb 2026 13:01:57 INFO  epoch 3 evaluating [time: 0.19s, valid_score: 0.970500]
+Mon 09 Feb 2026 13:01:57 INFO  valid result: 
+auc : 0.9705    logloss : 0.183
+Mon 09 Feb 2026 13:01:57 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:01 INFO  epoch 4 training [time: 3.90s, train loss: 11.8309]
+Mon 09 Feb 2026 13:02:02 INFO  epoch 4 evaluating [time: 0.23s, valid_score: 0.974900]
+Mon 09 Feb 2026 13:02:02 INFO  valid result: 
+auc : 0.9749    logloss : 0.1645
+Mon 09 Feb 2026 13:02:02 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:06 INFO  epoch 5 training [time: 3.98s, train loss: 9.0016]
+Mon 09 Feb 2026 13:02:06 INFO  epoch 5 evaluating [time: 0.24s, valid_score: 0.976900]
+Mon 09 Feb 2026 13:02:06 INFO  valid result: 
+auc : 0.9769    logloss : 0.1532
+Mon 09 Feb 2026 13:02:06 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:10 INFO  epoch 6 training [time: 4.02s, train loss: 6.9158]
+Mon 09 Feb 2026 13:02:10 INFO  epoch 6 evaluating [time: 0.20s, valid_score: 0.978100]
+Mon 09 Feb 2026 13:02:10 INFO  valid result: 
+auc : 0.9781    logloss : 0.1466
+Mon 09 Feb 2026 13:02:11 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:15 INFO  epoch 7 training [time: 4.04s, train loss: 5.3779]
+Mon 09 Feb 2026 13:02:15 INFO  epoch 7 evaluating [time: 0.22s, valid_score: 0.978700]
+Mon 09 Feb 2026 13:02:15 INFO  valid result: 
+auc : 0.9787    logloss : 0.1437
+Mon 09 Feb 2026 13:02:15 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:19 INFO  epoch 8 training [time: 4.05s, train loss: 4.2584]
+Mon 09 Feb 2026 13:02:19 INFO  epoch 8 evaluating [time: 0.17s, valid_score: 0.979100]
+Mon 09 Feb 2026 13:02:19 INFO  valid result: 
+auc : 0.9791    logloss : 0.1431
+Mon 09 Feb 2026 13:02:20 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:24 INFO  epoch 9 training [time: 4.04s, train loss: 3.4321]
+Mon 09 Feb 2026 13:02:24 INFO  epoch 9 evaluating [time: 0.17s, valid_score: 0.979300]
+Mon 09 Feb 2026 13:02:24 INFO  valid result: 
+auc : 0.9793    logloss : 0.144
+Mon 09 Feb 2026 13:02:24 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:28 INFO  epoch 10 training [time: 4.04s, train loss: 2.8085]
+Mon 09 Feb 2026 13:02:28 INFO  epoch 10 evaluating [time: 0.17s, valid_score: 0.979500]
+Mon 09 Feb 2026 13:02:28 INFO  valid result: 
+auc : 0.9795    logloss : 0.1453
+Mon 09 Feb 2026 13:02:28 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:32 INFO  epoch 11 training [time: 4.02s, train loss: 2.3249]
+Mon 09 Feb 2026 13:02:33 INFO  epoch 11 evaluating [time: 0.18s, valid_score: 0.979500]
+Mon 09 Feb 2026 13:02:33 INFO  valid result: 
+auc : 0.9795    logloss : 0.148
+Mon 09 Feb 2026 13:02:33 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:37 INFO  epoch 12 training [time: 4.03s, train loss: 1.9446]
+Mon 09 Feb 2026 13:02:37 INFO  epoch 12 evaluating [time: 0.17s, valid_score: 0.979600]
+Mon 09 Feb 2026 13:02:37 INFO  valid result: 
+auc : 0.9796    logloss : 0.1503
+Mon 09 Feb 2026 13:02:37 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:41 INFO  epoch 13 training [time: 3.98s, train loss: 1.6408]
+Mon 09 Feb 2026 13:02:41 INFO  epoch 13 evaluating [time: 0.17s, valid_score: 0.979600]
+Mon 09 Feb 2026 13:02:41 INFO  valid result: 
+auc : 0.9796    logloss : 0.1529
+Mon 09 Feb 2026 13:02:42 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:46 INFO  epoch 14 training [time: 4.02s, train loss: 1.3926]
+Mon 09 Feb 2026 13:02:46 INFO  epoch 14 evaluating [time: 0.18s, valid_score: 0.979700]
+Mon 09 Feb 2026 13:02:46 INFO  valid result: 
+auc : 0.9797    logloss : 0.1556
+Mon 09 Feb 2026 13:02:46 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:50 INFO  epoch 15 training [time: 4.01s, train loss: 1.1922]
+Mon 09 Feb 2026 13:02:50 INFO  epoch 15 evaluating [time: 0.17s, valid_score: 0.979700]
+Mon 09 Feb 2026 13:02:50 INFO  valid result: 
+auc : 0.9797    logloss : 0.1587
+Mon 09 Feb 2026 13:02:51 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:55 INFO  epoch 16 training [time: 4.02s, train loss: 1.0262]
+Mon 09 Feb 2026 13:02:55 INFO  epoch 16 evaluating [time: 0.29s, valid_score: 0.979700]
+Mon 09 Feb 2026 13:02:55 INFO  valid result: 
+auc : 0.9797    logloss : 0.1611
+Mon 09 Feb 2026 13:02:55 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:02:59 INFO  epoch 17 training [time: 3.98s, train loss: 0.8853]
+Mon 09 Feb 2026 13:02:59 INFO  epoch 17 evaluating [time: 0.16s, valid_score: 0.979700]
+Mon 09 Feb 2026 13:02:59 INFO  valid result: 
+auc : 0.9797    logloss : 0.164
+Mon 09 Feb 2026 13:03:00 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:04 INFO  epoch 18 training [time: 4.03s, train loss: 0.7693]
+Mon 09 Feb 2026 13:03:04 INFO  epoch 18 evaluating [time: 0.17s, valid_score: 0.979800]
+Mon 09 Feb 2026 13:03:04 INFO  valid result: 
+auc : 0.9798    logloss : 0.1667
+Mon 09 Feb 2026 13:03:04 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:08 INFO  epoch 19 training [time: 3.64s, train loss: 0.6713]
+Mon 09 Feb 2026 13:03:08 INFO  epoch 19 evaluating [time: 0.17s, valid_score: 0.979800]
+Mon 09 Feb 2026 13:03:08 INFO  valid result: 
+auc : 0.9798    logloss : 0.1694
+Mon 09 Feb 2026 13:03:08 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:12 INFO  epoch 20 training [time: 4.01s, train loss: 0.5889]
+Mon 09 Feb 2026 13:03:12 INFO  epoch 20 evaluating [time: 0.18s, valid_score: 0.979800]
+Mon 09 Feb 2026 13:03:12 INFO  valid result: 
+auc : 0.9798    logloss : 0.1722
+Mon 09 Feb 2026 13:03:12 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:16 INFO  epoch 21 training [time: 3.85s, train loss: 0.5187]
+Mon 09 Feb 2026 13:03:16 INFO  epoch 21 evaluating [time: 0.17s, valid_score: 0.979800]
+Mon 09 Feb 2026 13:03:16 INFO  valid result: 
+auc : 0.9798    logloss : 0.1748
+Mon 09 Feb 2026 13:03:17 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:21 INFO  epoch 22 training [time: 4.00s, train loss: 0.4567]
+Mon 09 Feb 2026 13:03:21 INFO  epoch 22 evaluating [time: 0.55s, valid_score: 0.979800]
+Mon 09 Feb 2026 13:03:21 INFO  valid result: 
+auc : 0.9798    logloss : 0.1775
+Mon 09 Feb 2026 13:03:21 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:25 INFO  epoch 23 training [time: 4.00s, train loss: 0.4052]
+Mon 09 Feb 2026 13:03:26 INFO  epoch 23 evaluating [time: 0.21s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:26 INFO  valid result: 
+auc : 0.9799    logloss : 0.18
+Mon 09 Feb 2026 13:03:26 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:30 INFO  epoch 24 training [time: 3.95s, train loss: 0.3600]
+Mon 09 Feb 2026 13:03:30 INFO  epoch 24 evaluating [time: 0.17s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:30 INFO  valid result: 
+auc : 0.9799    logloss : 0.1825
+Mon 09 Feb 2026 13:03:30 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:34 INFO  epoch 25 training [time: 3.32s, train loss: 0.3208]
+Mon 09 Feb 2026 13:03:34 INFO  epoch 25 evaluating [time: 0.17s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:34 INFO  valid result: 
+auc : 0.9799    logloss : 0.1849
+Mon 09 Feb 2026 13:03:34 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:38 INFO  epoch 26 training [time: 3.97s, train loss: 0.2877]
+Mon 09 Feb 2026 13:03:38 INFO  epoch 26 evaluating [time: 0.17s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:38 INFO  valid result: 
+auc : 0.9799    logloss : 0.1872
+Mon 09 Feb 2026 13:03:38 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:42 INFO  epoch 27 training [time: 4.01s, train loss: 0.2580]
+Mon 09 Feb 2026 13:03:43 INFO  epoch 27 evaluating [time: 0.21s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:43 INFO  valid result: 
+auc : 0.9799    logloss : 0.1897
+Mon 09 Feb 2026 13:03:43 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:47 INFO  epoch 28 training [time: 3.92s, train loss: 0.2325]
+Mon 09 Feb 2026 13:03:47 INFO  epoch 28 evaluating [time: 0.20s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:47 INFO  valid result: 
+auc : 0.9799    logloss : 0.192
+Mon 09 Feb 2026 13:03:47 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:51 INFO  epoch 29 training [time: 3.98s, train loss: 0.2095]
+Mon 09 Feb 2026 13:03:51 INFO  epoch 29 evaluating [time: 0.17s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:03:51 INFO  valid result: 
+auc : 0.98    logloss : 0.1941
+Mon 09 Feb 2026 13:03:52 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:03:55 INFO  epoch 30 training [time: 3.33s, train loss: 0.1904]
+Mon 09 Feb 2026 13:03:55 INFO  epoch 30 evaluating [time: 0.17s, valid_score: 0.979900]
+Mon 09 Feb 2026 13:03:55 INFO  valid result: 
+auc : 0.9799    logloss : 0.1964
+Mon 09 Feb 2026 13:03:59 INFO  epoch 31 training [time: 3.95s, train loss: 0.1724]
+Mon 09 Feb 2026 13:03:59 INFO  epoch 31 evaluating [time: 0.17s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:03:59 INFO  valid result: 
+auc : 0.98    logloss : 0.1986
+Mon 09 Feb 2026 13:03:59 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:03 INFO  epoch 32 training [time: 3.97s, train loss: 0.1573]
+Mon 09 Feb 2026 13:04:04 INFO  epoch 32 evaluating [time: 0.17s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:04:04 INFO  valid result: 
+auc : 0.98    logloss : 0.2006
+Mon 09 Feb 2026 13:04:04 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:07 INFO  epoch 33 training [time: 3.39s, train loss: 0.1431]
+Mon 09 Feb 2026 13:04:07 INFO  epoch 33 evaluating [time: 0.17s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:04:07 INFO  valid result: 
+auc : 0.98    logloss : 0.2027
+Mon 09 Feb 2026 13:04:08 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:12 INFO  epoch 34 training [time: 3.98s, train loss: 0.1309]
+Mon 09 Feb 2026 13:04:12 INFO  epoch 34 evaluating [time: 0.17s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:04:12 INFO  valid result: 
+auc : 0.98    logloss : 0.2047
+Mon 09 Feb 2026 13:04:12 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:16 INFO  epoch 35 training [time: 3.59s, train loss: 0.1202]
+Mon 09 Feb 2026 13:04:16 INFO  epoch 35 evaluating [time: 0.20s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:04:16 INFO  valid result: 
+auc : 0.98    logloss : 0.2069
+Mon 09 Feb 2026 13:04:16 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:20 INFO  epoch 36 training [time: 3.98s, train loss: 0.1101]
+Mon 09 Feb 2026 13:04:20 INFO  epoch 36 evaluating [time: 0.21s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:04:20 INFO  valid result: 
+auc : 0.98    logloss : 0.209
+Mon 09 Feb 2026 13:04:21 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:25 INFO  epoch 37 training [time: 3.97s, train loss: 0.1012]
+Mon 09 Feb 2026 13:04:25 INFO  epoch 37 evaluating [time: 0.21s, valid_score: 0.980000]
+Mon 09 Feb 2026 13:04:25 INFO  valid result: 
+auc : 0.98    logloss : 0.2109
+Mon 09 Feb 2026 13:04:25 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:29 INFO  epoch 38 training [time: 4.02s, train loss: 0.0931]
+Mon 09 Feb 2026 13:04:29 INFO  epoch 38 evaluating [time: 0.21s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:29 INFO  valid result: 
+auc : 0.9801    logloss : 0.2129
+Mon 09 Feb 2026 13:04:29 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:33 INFO  epoch 39 training [time: 3.98s, train loss: 0.0859]
+Mon 09 Feb 2026 13:04:34 INFO  epoch 39 evaluating [time: 0.21s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:34 INFO  valid result: 
+auc : 0.9801    logloss : 0.2147
+Mon 09 Feb 2026 13:04:34 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:38 INFO  epoch 40 training [time: 3.99s, train loss: 0.0793]
+Mon 09 Feb 2026 13:04:38 INFO  epoch 40 evaluating [time: 0.17s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:38 INFO  valid result: 
+auc : 0.9801    logloss : 0.2165
+Mon 09 Feb 2026 13:04:38 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:42 INFO  epoch 41 training [time: 4.00s, train loss: 0.0733]
+Mon 09 Feb 2026 13:04:42 INFO  epoch 41 evaluating [time: 0.18s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:42 INFO  valid result: 
+auc : 0.9801    logloss : 0.2185
+Mon 09 Feb 2026 13:04:43 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:47 INFO  epoch 42 training [time: 4.02s, train loss: 0.0678]
+Mon 09 Feb 2026 13:04:47 INFO  epoch 42 evaluating [time: 0.17s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:47 INFO  valid result: 
+auc : 0.9801    logloss : 0.2202
+Mon 09 Feb 2026 13:04:47 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:51 INFO  epoch 43 training [time: 4.00s, train loss: 0.0627]
+Mon 09 Feb 2026 13:04:51 INFO  epoch 43 evaluating [time: 0.18s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:51 INFO  valid result: 
+auc : 0.9801    logloss : 0.2223
+Mon 09 Feb 2026 13:04:52 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:04:56 INFO  epoch 44 training [time: 4.03s, train loss: 0.0582]
+Mon 09 Feb 2026 13:04:56 INFO  epoch 44 evaluating [time: 0.18s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:04:56 INFO  valid result: 
+auc : 0.9801    logloss : 0.2241
+Mon 09 Feb 2026 13:04:56 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:00 INFO  epoch 45 training [time: 3.97s, train loss: 0.0540]
+Mon 09 Feb 2026 13:05:00 INFO  epoch 45 evaluating [time: 0.17s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:05:00 INFO  valid result: 
+auc : 0.9801    logloss : 0.2258
+Mon 09 Feb 2026 13:05:00 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:04 INFO  epoch 46 training [time: 3.99s, train loss: 0.0502]
+Mon 09 Feb 2026 13:05:05 INFO  epoch 46 evaluating [time: 0.18s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:05:05 INFO  valid result: 
+auc : 0.9801    logloss : 0.2275
+Mon 09 Feb 2026 13:05:05 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:09 INFO  epoch 47 training [time: 4.00s, train loss: 0.0467]
+Mon 09 Feb 2026 13:05:09 INFO  epoch 47 evaluating [time: 0.35s, valid_score: 0.980100]
+Mon 09 Feb 2026 13:05:09 INFO  valid result: 
+auc : 0.9801    logloss : 0.2291
+Mon 09 Feb 2026 13:05:09 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:13 INFO  epoch 48 training [time: 3.88s, train loss: 0.0434]
+Mon 09 Feb 2026 13:05:13 INFO  epoch 48 evaluating [time: 0.19s, valid_score: 0.980200]
+Mon 09 Feb 2026 13:05:13 INFO  valid result: 
+auc : 0.9802    logloss : 0.2311
+Mon 09 Feb 2026 13:05:14 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:18 INFO  epoch 49 training [time: 4.02s, train loss: 0.0404]
+Mon 09 Feb 2026 13:05:18 INFO  epoch 49 evaluating [time: 0.20s, valid_score: 0.980200]
+Mon 09 Feb 2026 13:05:18 INFO  valid result: 
+auc : 0.9802    logloss : 0.2327
+Mon 09 Feb 2026 13:05:18 INFO  Saving current: outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:18 INFO  Loading model structure and parameters from outputs/frappe/ffm/FFM-Feb-09-2026_13-01-40.pth
+Mon 09 Feb 2026 13:05:19 INFO  The running environment of this training is as follows:
++-------------+------------------+
+| Environment |      Usage       |
++=============+==================+
+| CPU         |      0.00 %      |
++-------------+------------------+
+| GPU         |  0.42 G/23.56 G  |
++-------------+------------------+
+| Memory      | 1.62 G/1006.54 G |
++-------------+------------------+
+Mon 09 Feb 2026 13:05:19 INFO  best valid : OrderedDict([('auc', 0.9802), ('logloss', 0.2327)])
+Mon 09 Feb 2026 13:05:19 INFO  test result: OrderedDict([('auc', 0.9784), ('logloss', 0.2479)])
+Mon 09 Feb 2026 13:05:19 INFO  ['/home/bari/Evaluate-CARS/src/pipelines/frappe_pipeline.py']
+Mon 09 Feb 2026 13:05:19 INFO  
+General Hyper Parameters:
+gpu_id = 0
+use_gpu = True
+seed = 2024
+state = INFO
+reproducibility = True
+data_path = datasets/frappe/recbole/frappe
+checkpoint_dir = outputs/frappe/afm
+show_progress = True
+save_dataset = False
+dataset_save_path = None
+save_dataloaders = False
+dataloaders_save_path = None
+log_wandb = False
+
+Training Hyper Parameters:
+epochs = 50
+train_batch_size = 2048
+learner = adam
+learning_rate = 0.001
+train_neg_sample_args = {'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}
+eval_step = 1
+stopping_step = 10
+clip_grad_norm = None
+weight_decay = 0.0
+loss_decimal_place = 4
+
+Evaluation Hyper Parameters:
+eval_args = {'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}
+repeatable = False
+metrics = ['AUC', 'LogLoss']
+topk = [10]
+valid_metric = AUC
+valid_metric_bigger = True
+eval_batch_size = 4096
+metric_decimal_place = 4
+
+Dataset Hyper Parameters:
+field_separator = 	
+seq_separator =  
+USER_ID_FIELD = user_id
+ITEM_ID_FIELD = item_id
+RATING_FIELD = rating
+TIME_FIELD = timestamp
+seq_len = None
+LABEL_FIELD = label
+threshold = None
+NEG_PREFIX = neg_
+load_col = {'inter': ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']}
+unload_col = None
+unused_col = None
+additional_feat_suffix = None
+rm_dup_inter = None
+val_interval = None
+filter_inter_by_user_or_item = True
+user_inter_num_interval = [0,inf)
+item_inter_num_interval = [0,inf)
+alias_of_user_id = None
+alias_of_item_id = None
+alias_of_entity_id = None
+alias_of_relation_id = None
+preload_weight = None
+normalize_field = None
+normalize_all = None
+ITEM_LIST_LENGTH_FIELD = item_length
+LIST_SUFFIX = _list
+MAX_ITEM_LIST_LENGTH = 50
+POSITION_FIELD = position_id
+HEAD_ENTITY_ID_FIELD = head_id
+TAIL_ENTITY_ID_FIELD = tail_id
+RELATION_ID_FIELD = relation_id
+ENTITY_ID_FIELD = entity_id
+benchmark_filename = ['train', 'valid', 'test']
+
+Other Hyper Parameters: 
+worker = 0
+wandb_project = recbole
+shuffle = True
+require_pow = False
+enable_amp = False
+enable_scaler = False
+transform = None
+embedding_size = 64
+attention_size = 64
+dropout_prob = 0.1
+reg_weight = 0.0001
+numerical_features = []
+discretization = None
+kg_reverse_r = False
+entity_kg_num_interval = [0,inf)
+relation_kg_num_interval = [0,inf)
+MODEL_TYPE = ModelType.CONTEXT
+device = cuda
+MODEL_INPUT_TYPE = InputType.POINTWISE
+eval_type = EvaluatorType.VALUE
+single_spec = True
+local_rank = 0
+valid_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+test_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+
+
+Mon 09 Feb 2026 13:05:21 INFO  frappe
+The number of users: 958
+Average actions of users: 301.576802507837
+The number of items: 4083
+Average actions of items: 70.70284174424302
+The number of inters: 288609
+The sparsity of the dataset: 92.62155267755656%
+Remain Fields: ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']
+Mon 09 Feb 2026 13:05:21 INFO  [Training]: train_batch_size = [2048] train_neg_sample_args: [{'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}]
+Mon 09 Feb 2026 13:05:21 INFO  [Evaluation]: eval_batch_size = [4096] eval_args: [{'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}]
+Mon 09 Feb 2026 13:05:21 INFO  AFM(
+  (token_embedding_table): FMEmbedding(
+    (embedding): Embedding(5392, 64)
+  )
+  (first_order_linear): FMFirstOrderLinear(
+    (token_embedding_table): FMEmbedding(
+      (embedding): Embedding(5392, 1)
+    )
+  )
+  (attlayer): AttLayer(
+    (w): Linear(in_features=64, out_features=64, bias=False)
+  )
+  (dropout_layer): Dropout(p=0.1, inplace=False)
+  (sigmoid): Sigmoid()
+  (loss): BCEWithLogitsLoss()
+)
+Trainable parameters: 354705
+Mon 09 Feb 2026 13:05:21 INFO  FLOPs: 184970.0
+Mon 09 Feb 2026 13:05:22 INFO  epoch 0 training [time: 1.11s, train loss: 61.8027]
+Mon 09 Feb 2026 13:05:22 INFO  epoch 0 evaluating [time: 0.18s, valid_score: 0.920500]
+Mon 09 Feb 2026 13:05:22 INFO  valid result: 
+auc : 0.9205    logloss : 0.4862
+Mon 09 Feb 2026 13:05:22 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:24 INFO  epoch 1 training [time: 1.02s, train loss: 34.0907]
+Mon 09 Feb 2026 13:05:24 INFO  epoch 1 evaluating [time: 0.17s, valid_score: 0.939000]
+Mon 09 Feb 2026 13:05:24 INFO  valid result: 
+auc : 0.939    logloss : 0.2857
+Mon 09 Feb 2026 13:05:24 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:25 INFO  epoch 2 training [time: 1.05s, train loss: 26.6734]
+Mon 09 Feb 2026 13:05:25 INFO  epoch 2 evaluating [time: 0.17s, valid_score: 0.942800]
+Mon 09 Feb 2026 13:05:25 INFO  valid result: 
+auc : 0.9428    logloss : 0.2734
+Mon 09 Feb 2026 13:05:25 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:26 INFO  epoch 3 training [time: 1.08s, train loss: 25.3016]
+Mon 09 Feb 2026 13:05:26 INFO  epoch 3 evaluating [time: 0.17s, valid_score: 0.944900]
+Mon 09 Feb 2026 13:05:26 INFO  valid result: 
+auc : 0.9449    logloss : 0.2681
+Mon 09 Feb 2026 13:05:26 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:27 INFO  epoch 4 training [time: 1.04s, train loss: 24.2944]
+Mon 09 Feb 2026 13:05:27 INFO  epoch 4 evaluating [time: 0.17s, valid_score: 0.946900]
+Mon 09 Feb 2026 13:05:27 INFO  valid result: 
+auc : 0.9469    logloss : 0.2634
+Mon 09 Feb 2026 13:05:27 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:28 INFO  epoch 5 training [time: 1.02s, train loss: 23.2627]
+Mon 09 Feb 2026 13:05:29 INFO  epoch 5 evaluating [time: 0.17s, valid_score: 0.948900]
+Mon 09 Feb 2026 13:05:29 INFO  valid result: 
+auc : 0.9489    logloss : 0.2582
+Mon 09 Feb 2026 13:05:29 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:30 INFO  epoch 6 training [time: 1.06s, train loss: 22.1820]
+Mon 09 Feb 2026 13:05:30 INFO  epoch 6 evaluating [time: 0.17s, valid_score: 0.950800]
+Mon 09 Feb 2026 13:05:30 INFO  valid result: 
+auc : 0.9508    logloss : 0.2538
+Mon 09 Feb 2026 13:05:30 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:31 INFO  epoch 7 training [time: 1.03s, train loss: 21.1301]
+Mon 09 Feb 2026 13:05:31 INFO  epoch 7 evaluating [time: 0.17s, valid_score: 0.952900]
+Mon 09 Feb 2026 13:05:31 INFO  valid result: 
+auc : 0.9529    logloss : 0.2485
+Mon 09 Feb 2026 13:05:31 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:32 INFO  epoch 8 training [time: 1.06s, train loss: 20.1119]
+Mon 09 Feb 2026 13:05:32 INFO  epoch 8 evaluating [time: 0.17s, valid_score: 0.954400]
+Mon 09 Feb 2026 13:05:32 INFO  valid result: 
+auc : 0.9544    logloss : 0.2444
+Mon 09 Feb 2026 13:05:32 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:33 INFO  epoch 9 training [time: 1.03s, train loss: 19.0145]
+Mon 09 Feb 2026 13:05:34 INFO  epoch 9 evaluating [time: 0.17s, valid_score: 0.956500]
+Mon 09 Feb 2026 13:05:34 INFO  valid result: 
+auc : 0.9565    logloss : 0.2399
+Mon 09 Feb 2026 13:05:34 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:35 INFO  epoch 10 training [time: 1.08s, train loss: 17.8792]
+Mon 09 Feb 2026 13:05:35 INFO  epoch 10 evaluating [time: 0.17s, valid_score: 0.957900]
+Mon 09 Feb 2026 13:05:35 INFO  valid result: 
+auc : 0.9579    logloss : 0.2366
+Mon 09 Feb 2026 13:05:35 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:36 INFO  epoch 11 training [time: 1.02s, train loss: 16.8056]
+Mon 09 Feb 2026 13:05:36 INFO  epoch 11 evaluating [time: 0.17s, valid_score: 0.959300]
+Mon 09 Feb 2026 13:05:36 INFO  valid result: 
+auc : 0.9593    logloss : 0.2353
+Mon 09 Feb 2026 13:05:36 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:37 INFO  epoch 12 training [time: 1.03s, train loss: 15.8182]
+Mon 09 Feb 2026 13:05:37 INFO  epoch 12 evaluating [time: 0.17s, valid_score: 0.960200]
+Mon 09 Feb 2026 13:05:37 INFO  valid result: 
+auc : 0.9602    logloss : 0.2343
+Mon 09 Feb 2026 13:05:37 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:38 INFO  epoch 13 training [time: 1.04s, train loss: 15.0175]
+Mon 09 Feb 2026 13:05:38 INFO  epoch 13 evaluating [time: 0.17s, valid_score: 0.961100]
+Mon 09 Feb 2026 13:05:38 INFO  valid result: 
+auc : 0.9611    logloss : 0.2332
+Mon 09 Feb 2026 13:05:38 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:39 INFO  epoch 14 training [time: 1.04s, train loss: 14.1677]
+Mon 09 Feb 2026 13:05:40 INFO  epoch 14 evaluating [time: 0.17s, valid_score: 0.961900]
+Mon 09 Feb 2026 13:05:40 INFO  valid result: 
+auc : 0.9619    logloss : 0.2337
+Mon 09 Feb 2026 13:05:40 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:41 INFO  epoch 15 training [time: 1.06s, train loss: 13.4495]
+Mon 09 Feb 2026 13:05:41 INFO  epoch 15 evaluating [time: 0.17s, valid_score: 0.962300]
+Mon 09 Feb 2026 13:05:41 INFO  valid result: 
+auc : 0.9623    logloss : 0.2365
+Mon 09 Feb 2026 13:05:41 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:42 INFO  epoch 16 training [time: 1.07s, train loss: 12.7941]
+Mon 09 Feb 2026 13:05:42 INFO  epoch 16 evaluating [time: 0.18s, valid_score: 0.962800]
+Mon 09 Feb 2026 13:05:42 INFO  valid result: 
+auc : 0.9628    logloss : 0.236
+Mon 09 Feb 2026 13:05:42 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:43 INFO  epoch 17 training [time: 1.04s, train loss: 12.2150]
+Mon 09 Feb 2026 13:05:43 INFO  epoch 17 evaluating [time: 0.13s, valid_score: 0.962800]
+Mon 09 Feb 2026 13:05:43 INFO  valid result: 
+auc : 0.9628    logloss : 0.2396
+Mon 09 Feb 2026 13:05:43 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:44 INFO  epoch 18 training [time: 1.02s, train loss: 11.6158]
+Mon 09 Feb 2026 13:05:44 INFO  epoch 18 evaluating [time: 0.13s, valid_score: 0.963000]
+Mon 09 Feb 2026 13:05:44 INFO  valid result: 
+auc : 0.963    logloss : 0.2407
+Mon 09 Feb 2026 13:05:44 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:46 INFO  epoch 19 training [time: 1.05s, train loss: 11.0433]
+Mon 09 Feb 2026 13:05:46 INFO  epoch 19 evaluating [time: 0.13s, valid_score: 0.963300]
+Mon 09 Feb 2026 13:05:46 INFO  valid result: 
+auc : 0.9633    logloss : 0.2422
+Mon 09 Feb 2026 13:05:46 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:47 INFO  epoch 20 training [time: 1.02s, train loss: 10.5554]
+Mon 09 Feb 2026 13:05:47 INFO  epoch 20 evaluating [time: 0.13s, valid_score: 0.963400]
+Mon 09 Feb 2026 13:05:47 INFO  valid result: 
+auc : 0.9634    logloss : 0.2463
+Mon 09 Feb 2026 13:05:47 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:48 INFO  epoch 21 training [time: 1.07s, train loss: 10.1332]
+Mon 09 Feb 2026 13:05:48 INFO  epoch 21 evaluating [time: 0.13s, valid_score: 0.963000]
+Mon 09 Feb 2026 13:05:48 INFO  valid result: 
+auc : 0.963    logloss : 0.253
+Mon 09 Feb 2026 13:05:49 INFO  epoch 22 training [time: 1.04s, train loss: 9.6825]
+Mon 09 Feb 2026 13:05:49 INFO  epoch 22 evaluating [time: 0.13s, valid_score: 0.963500]
+Mon 09 Feb 2026 13:05:49 INFO  valid result: 
+auc : 0.9635    logloss : 0.2517
+Mon 09 Feb 2026 13:05:49 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:50 INFO  epoch 23 training [time: 1.05s, train loss: 9.2754]
+Mon 09 Feb 2026 13:05:50 INFO  epoch 23 evaluating [time: 0.13s, valid_score: 0.963700]
+Mon 09 Feb 2026 13:05:50 INFO  valid result: 
+auc : 0.9637    logloss : 0.2544
+Mon 09 Feb 2026 13:05:50 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:51 INFO  epoch 24 training [time: 1.05s, train loss: 8.9104]
+Mon 09 Feb 2026 13:05:52 INFO  epoch 24 evaluating [time: 0.13s, valid_score: 0.963400]
+Mon 09 Feb 2026 13:05:52 INFO  valid result: 
+auc : 0.9634    logloss : 0.2589
+Mon 09 Feb 2026 13:05:53 INFO  epoch 25 training [time: 1.03s, train loss: 8.6062]
+Mon 09 Feb 2026 13:05:53 INFO  epoch 25 evaluating [time: 0.13s, valid_score: 0.963700]
+Mon 09 Feb 2026 13:05:53 INFO  valid result: 
+auc : 0.9637    logloss : 0.2598
+Mon 09 Feb 2026 13:05:53 INFO  Saving current: outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:05:54 INFO  epoch 26 training [time: 1.02s, train loss: 8.2761]
+Mon 09 Feb 2026 13:05:54 INFO  epoch 26 evaluating [time: 0.13s, valid_score: 0.963300]
+Mon 09 Feb 2026 13:05:54 INFO  valid result: 
+auc : 0.9633    logloss : 0.2657
+Mon 09 Feb 2026 13:05:55 INFO  epoch 27 training [time: 1.02s, train loss: 7.9939]
+Mon 09 Feb 2026 13:05:55 INFO  epoch 27 evaluating [time: 0.13s, valid_score: 0.963200]
+Mon 09 Feb 2026 13:05:55 INFO  valid result: 
+auc : 0.9632    logloss : 0.2683
+Mon 09 Feb 2026 13:05:56 INFO  epoch 28 training [time: 1.01s, train loss: 7.7062]
+Mon 09 Feb 2026 13:05:56 INFO  epoch 28 evaluating [time: 0.13s, valid_score: 0.963000]
+Mon 09 Feb 2026 13:05:56 INFO  valid result: 
+auc : 0.963    logloss : 0.274
+Mon 09 Feb 2026 13:05:57 INFO  epoch 29 training [time: 1.07s, train loss: 7.3946]
+Mon 09 Feb 2026 13:05:57 INFO  epoch 29 evaluating [time: 0.13s, valid_score: 0.963100]
+Mon 09 Feb 2026 13:05:57 INFO  valid result: 
+auc : 0.9631    logloss : 0.2769
+Mon 09 Feb 2026 13:05:58 INFO  epoch 30 training [time: 1.02s, train loss: 7.2070]
+Mon 09 Feb 2026 13:05:59 INFO  epoch 30 evaluating [time: 0.13s, valid_score: 0.963000]
+Mon 09 Feb 2026 13:05:59 INFO  valid result: 
+auc : 0.963    logloss : 0.2836
+Mon 09 Feb 2026 13:06:00 INFO  epoch 31 training [time: 1.01s, train loss: 6.9987]
+Mon 09 Feb 2026 13:06:00 INFO  epoch 31 evaluating [time: 0.13s, valid_score: 0.962800]
+Mon 09 Feb 2026 13:06:00 INFO  valid result: 
+auc : 0.9628    logloss : 0.2852
+Mon 09 Feb 2026 13:06:01 INFO  epoch 32 training [time: 1.03s, train loss: 6.8730]
+Mon 09 Feb 2026 13:06:01 INFO  epoch 32 evaluating [time: 0.13s, valid_score: 0.963100]
+Mon 09 Feb 2026 13:06:01 INFO  valid result: 
+auc : 0.9631    logloss : 0.2855
+Mon 09 Feb 2026 13:06:02 INFO  epoch 33 training [time: 1.09s, train loss: 6.7051]
+Mon 09 Feb 2026 13:06:02 INFO  epoch 33 evaluating [time: 0.13s, valid_score: 0.962200]
+Mon 09 Feb 2026 13:06:02 INFO  valid result: 
+auc : 0.9622    logloss : 0.2955
+Mon 09 Feb 2026 13:06:03 INFO  epoch 34 training [time: 1.02s, train loss: 6.6385]
+Mon 09 Feb 2026 13:06:03 INFO  epoch 34 evaluating [time: 0.13s, valid_score: 0.962400]
+Mon 09 Feb 2026 13:06:03 INFO  valid result: 
+auc : 0.9624    logloss : 0.2948
+Mon 09 Feb 2026 13:06:04 INFO  epoch 35 training [time: 1.04s, train loss: 6.4479]
+Mon 09 Feb 2026 13:06:04 INFO  epoch 35 evaluating [time: 0.13s, valid_score: 0.962600]
+Mon 09 Feb 2026 13:06:04 INFO  valid result: 
+auc : 0.9626    logloss : 0.2944
+Mon 09 Feb 2026 13:06:05 INFO  epoch 36 training [time: 1.04s, train loss: 6.2240]
+Mon 09 Feb 2026 13:06:06 INFO  epoch 36 evaluating [time: 0.13s, valid_score: 0.962100]
+Mon 09 Feb 2026 13:06:06 INFO  valid result: 
+auc : 0.9621    logloss : 0.3017
+Mon 09 Feb 2026 13:06:06 INFO  Finished training, best eval result in epoch 25
+Mon 09 Feb 2026 13:06:06 INFO  Loading model structure and parameters from outputs/frappe/afm/AFM-Feb-09-2026_13-05-21.pth
+Mon 09 Feb 2026 13:06:07 INFO  The running environment of this training is as follows:
++-------------+------------------+
+| Environment |      Usage       |
++=============+==================+
+| CPU         |      0.00 %      |
++-------------+------------------+
+| GPU         |  0.58 G/23.56 G  |
++-------------+------------------+
+| Memory      | 1.75 G/1006.54 G |
++-------------+------------------+
+Mon 09 Feb 2026 13:06:07 INFO  best valid : OrderedDict([('auc', 0.9637), ('logloss', 0.2598)])
+Mon 09 Feb 2026 13:06:07 INFO  test result: OrderedDict([('auc', 0.9622), ('logloss', 0.2653)])
+Mon 09 Feb 2026 13:06:07 INFO  ['/home/bari/Evaluate-CARS/src/pipelines/frappe_pipeline.py']
+Mon 09 Feb 2026 13:06:07 INFO  
+General Hyper Parameters:
+gpu_id = 0
+use_gpu = True
+seed = 2024
+state = INFO
+reproducibility = True
+data_path = datasets/frappe/recbole/frappe
+checkpoint_dir = outputs/frappe/fwfm
+show_progress = True
+save_dataset = False
+dataset_save_path = None
+save_dataloaders = False
+dataloaders_save_path = None
+log_wandb = False
+
+Training Hyper Parameters:
+epochs = 50
+train_batch_size = 2048
+learner = adam
+learning_rate = 0.001
+train_neg_sample_args = {'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}
+eval_step = 1
+stopping_step = 10
+clip_grad_norm = None
+weight_decay = 0.0
+loss_decimal_place = 4
+
+Evaluation Hyper Parameters:
+eval_args = {'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}
+repeatable = False
+metrics = ['AUC', 'LogLoss']
+topk = [10]
+valid_metric = AUC
+valid_metric_bigger = True
+eval_batch_size = 4096
+metric_decimal_place = 4
+
+Dataset Hyper Parameters:
+field_separator = 	
+seq_separator =  
+USER_ID_FIELD = user_id
+ITEM_ID_FIELD = item_id
+RATING_FIELD = rating
+TIME_FIELD = timestamp
+seq_len = None
+LABEL_FIELD = label
+threshold = None
+NEG_PREFIX = neg_
+load_col = {'inter': ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']}
+unload_col = None
+unused_col = None
+additional_feat_suffix = None
+rm_dup_inter = None
+val_interval = None
+filter_inter_by_user_or_item = True
+user_inter_num_interval = [0,inf)
+item_inter_num_interval = [0,inf)
+alias_of_user_id = None
+alias_of_item_id = None
+alias_of_entity_id = None
+alias_of_relation_id = None
+preload_weight = None
+normalize_field = None
+normalize_all = None
+ITEM_LIST_LENGTH_FIELD = item_length
+LIST_SUFFIX = _list
+MAX_ITEM_LIST_LENGTH = 50
+POSITION_FIELD = position_id
+HEAD_ENTITY_ID_FIELD = head_id
+TAIL_ENTITY_ID_FIELD = tail_id
+RELATION_ID_FIELD = relation_id
+ENTITY_ID_FIELD = entity_id
+benchmark_filename = ['train', 'valid', 'test']
+
+Other Hyper Parameters: 
+worker = 0
+wandb_project = recbole
+shuffle = True
+require_pow = False
+enable_amp = False
+enable_scaler = False
+transform = None
+embedding_size = 64
+dropout_prob = 0.0
+fields = None
+numerical_features = []
+discretization = None
+kg_reverse_r = False
+entity_kg_num_interval = [0,inf)
+relation_kg_num_interval = [0,inf)
+MODEL_TYPE = ModelType.CONTEXT
+reg_weight = 0.0001
+device = cuda
+MODEL_INPUT_TYPE = InputType.POINTWISE
+eval_type = EvaluatorType.VALUE
+single_spec = True
+local_rank = 0
+valid_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+test_neg_sample_args = {'distribution': 'none', 'sample_num': 'none'}
+
+
+Mon 09 Feb 2026 13:06:08 INFO  frappe
+The number of users: 958
+Average actions of users: 301.576802507837
+The number of items: 4083
+Average actions of items: 70.70284174424302
+The number of inters: 288609
+The sparsity of the dataset: 92.62155267755656%
+Remain Fields: ['user_id', 'item_id', 'label', 'daytime', 'weekday', 'isweekend', 'homework', 'cost', 'weather', 'country', 'city']
+Mon 09 Feb 2026 13:06:08 INFO  [Training]: train_batch_size = [2048] train_neg_sample_args: [{'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}]
+Mon 09 Feb 2026 13:06:08 INFO  [Evaluation]: eval_batch_size = [4096] eval_args: [{'split': {'RS': [1.0, 0.0, 0.0]}, 'order': 'RO', 'group_by': 'user', 'mode': {'valid': 'labeled', 'test': 'labeled'}}]
+Mon 09 Feb 2026 13:06:08 INFO  FwFM(
+  (token_embedding_table): FMEmbedding(
+    (embedding): Embedding(5392, 64)
+  )
+  (first_order_linear): FMFirstOrderLinear(
+    (token_embedding_table): FMEmbedding(
+      (embedding): Embedding(5392, 1)
+    )
+  )
+  (dropout_layer): Dropout(p=0.0, inplace=False)
+  (sigmoid): Sigmoid()
+  (loss): BCEWithLogitsLoss()
+)
+Trainable parameters: 350481
+Mon 09 Feb 2026 13:06:08 INFO  FLOPs: 650.0
+Mon 09 Feb 2026 13:06:12 INFO  epoch 0 training [time: 3.97s, train loss: 54.0678]
+Mon 09 Feb 2026 13:06:12 INFO  epoch 0 evaluating [time: 0.16s, valid_score: 0.933700]
+Mon 09 Feb 2026 13:06:12 INFO  valid result: 
+auc : 0.9337    logloss : 0.3432
+Mon 09 Feb 2026 13:06:12 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:16 INFO  epoch 1 training [time: 3.97s, train loss: 28.3896]
+Mon 09 Feb 2026 13:06:16 INFO  epoch 1 evaluating [time: 0.16s, valid_score: 0.940800]
+Mon 09 Feb 2026 13:06:16 INFO  valid result: 
+auc : 0.9408    logloss : 0.2771
+Mon 09 Feb 2026 13:06:16 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:21 INFO  epoch 2 training [time: 4.00s, train loss: 26.0595]
+Mon 09 Feb 2026 13:06:21 INFO  epoch 2 evaluating [time: 0.16s, valid_score: 0.941700]
+Mon 09 Feb 2026 13:06:21 INFO  valid result: 
+auc : 0.9417    logloss : 0.2736
+Mon 09 Feb 2026 13:06:21 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:25 INFO  epoch 3 training [time: 4.05s, train loss: 25.2997]
+Mon 09 Feb 2026 13:06:25 INFO  epoch 3 evaluating [time: 0.16s, valid_score: 0.943100]
+Mon 09 Feb 2026 13:06:25 INFO  valid result: 
+auc : 0.9431    logloss : 0.2701
+Mon 09 Feb 2026 13:06:25 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:29 INFO  epoch 4 training [time: 4.00s, train loss: 24.4926]
+Mon 09 Feb 2026 13:06:29 INFO  epoch 4 evaluating [time: 0.16s, valid_score: 0.945100]
+Mon 09 Feb 2026 13:06:29 INFO  valid result: 
+auc : 0.9451    logloss : 0.2649
+Mon 09 Feb 2026 13:06:29 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:33 INFO  epoch 5 training [time: 3.99s, train loss: 23.4778]
+Mon 09 Feb 2026 13:06:33 INFO  epoch 5 evaluating [time: 0.16s, valid_score: 0.947700]
+Mon 09 Feb 2026 13:06:33 INFO  valid result: 
+auc : 0.9477    logloss : 0.2579
+Mon 09 Feb 2026 13:06:33 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:37 INFO  epoch 6 training [time: 4.05s, train loss: 22.3604]
+Mon 09 Feb 2026 13:06:37 INFO  epoch 6 evaluating [time: 0.16s, valid_score: 0.950800]
+Mon 09 Feb 2026 13:06:37 INFO  valid result: 
+auc : 0.9508    logloss : 0.2499
+Mon 09 Feb 2026 13:06:37 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:41 INFO  epoch 7 training [time: 4.04s, train loss: 21.1699]
+Mon 09 Feb 2026 13:06:42 INFO  epoch 7 evaluating [time: 0.17s, valid_score: 0.953800]
+Mon 09 Feb 2026 13:06:42 INFO  valid result: 
+auc : 0.9538    logloss : 0.242
+Mon 09 Feb 2026 13:06:42 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:46 INFO  epoch 8 training [time: 4.01s, train loss: 19.9753]
+Mon 09 Feb 2026 13:06:46 INFO  epoch 8 evaluating [time: 0.16s, valid_score: 0.957000]
+Mon 09 Feb 2026 13:06:46 INFO  valid result: 
+auc : 0.957    logloss : 0.2334
+Mon 09 Feb 2026 13:06:46 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:50 INFO  epoch 9 training [time: 4.01s, train loss: 18.8142]
+Mon 09 Feb 2026 13:06:50 INFO  epoch 9 evaluating [time: 0.16s, valid_score: 0.959800]
+Mon 09 Feb 2026 13:06:50 INFO  valid result: 
+auc : 0.9598    logloss : 0.2257
+Mon 09 Feb 2026 13:06:50 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:54 INFO  epoch 10 training [time: 4.06s, train loss: 17.7133]
+Mon 09 Feb 2026 13:06:54 INFO  epoch 10 evaluating [time: 0.16s, valid_score: 0.962200]
+Mon 09 Feb 2026 13:06:54 INFO  valid result: 
+auc : 0.9622    logloss : 0.2183
+Mon 09 Feb 2026 13:06:54 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:06:58 INFO  epoch 11 training [time: 4.00s, train loss: 16.6645]
+Mon 09 Feb 2026 13:06:58 INFO  epoch 11 evaluating [time: 0.16s, valid_score: 0.964300]
+Mon 09 Feb 2026 13:06:58 INFO  valid result: 
+auc : 0.9643    logloss : 0.2119
+Mon 09 Feb 2026 13:06:58 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:02 INFO  epoch 12 training [time: 3.97s, train loss: 15.6619]
+Mon 09 Feb 2026 13:07:03 INFO  epoch 12 evaluating [time: 0.16s, valid_score: 0.966300]
+Mon 09 Feb 2026 13:07:03 INFO  valid result: 
+auc : 0.9663    logloss : 0.2057
+Mon 09 Feb 2026 13:07:03 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:07 INFO  epoch 13 training [time: 3.99s, train loss: 14.7195]
+Mon 09 Feb 2026 13:07:07 INFO  epoch 13 evaluating [time: 0.17s, valid_score: 0.968000]
+Mon 09 Feb 2026 13:07:07 INFO  valid result: 
+auc : 0.968    logloss : 0.2003
+Mon 09 Feb 2026 13:07:07 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:11 INFO  epoch 14 training [time: 4.01s, train loss: 13.8272]
+Mon 09 Feb 2026 13:07:11 INFO  epoch 14 evaluating [time: 0.16s, valid_score: 0.969500]
+Mon 09 Feb 2026 13:07:11 INFO  valid result: 
+auc : 0.9695    logloss : 0.1948
+Mon 09 Feb 2026 13:07:11 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:15 INFO  epoch 15 training [time: 4.01s, train loss: 13.0182]
+Mon 09 Feb 2026 13:07:15 INFO  epoch 15 evaluating [time: 0.16s, valid_score: 0.970600]
+Mon 09 Feb 2026 13:07:15 INFO  valid result: 
+auc : 0.9706    logloss : 0.1904
+Mon 09 Feb 2026 13:07:15 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:19 INFO  epoch 16 training [time: 4.05s, train loss: 12.2226]
+Mon 09 Feb 2026 13:07:19 INFO  epoch 16 evaluating [time: 0.16s, valid_score: 0.971700]
+Mon 09 Feb 2026 13:07:19 INFO  valid result: 
+auc : 0.9717    logloss : 0.1861
+Mon 09 Feb 2026 13:07:19 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:23 INFO  epoch 17 training [time: 3.99s, train loss: 11.4898]
+Mon 09 Feb 2026 13:07:23 INFO  epoch 17 evaluating [time: 0.16s, valid_score: 0.972800]
+Mon 09 Feb 2026 13:07:23 INFO  valid result: 
+auc : 0.9728    logloss : 0.1823
+Mon 09 Feb 2026 13:07:23 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:27 INFO  epoch 18 training [time: 3.99s, train loss: 10.7938]
+Mon 09 Feb 2026 13:07:28 INFO  epoch 18 evaluating [time: 0.16s, valid_score: 0.973600]
+Mon 09 Feb 2026 13:07:28 INFO  valid result: 
+auc : 0.9736    logloss : 0.1789
+Mon 09 Feb 2026 13:07:28 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:32 INFO  epoch 19 training [time: 4.00s, train loss: 10.1434]
+Mon 09 Feb 2026 13:07:32 INFO  epoch 19 evaluating [time: 0.16s, valid_score: 0.974300]
+Mon 09 Feb 2026 13:07:32 INFO  valid result: 
+auc : 0.9743    logloss : 0.1761
+Mon 09 Feb 2026 13:07:32 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:36 INFO  epoch 20 training [time: 4.05s, train loss: 9.5491]
+Mon 09 Feb 2026 13:07:36 INFO  epoch 20 evaluating [time: 0.16s, valid_score: 0.974800]
+Mon 09 Feb 2026 13:07:36 INFO  valid result: 
+auc : 0.9748    logloss : 0.1739
+Mon 09 Feb 2026 13:07:36 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:40 INFO  epoch 21 training [time: 4.02s, train loss: 8.9606]
+Mon 09 Feb 2026 13:07:40 INFO  epoch 21 evaluating [time: 0.16s, valid_score: 0.975400]
+Mon 09 Feb 2026 13:07:40 INFO  valid result: 
+auc : 0.9754    logloss : 0.1718
+Mon 09 Feb 2026 13:07:40 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:44 INFO  epoch 22 training [time: 4.05s, train loss: 8.4201]
+Mon 09 Feb 2026 13:07:44 INFO  epoch 22 evaluating [time: 0.16s, valid_score: 0.975900]
+Mon 09 Feb 2026 13:07:44 INFO  valid result: 
+auc : 0.9759    logloss : 0.1698
+Mon 09 Feb 2026 13:07:44 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:48 INFO  epoch 23 training [time: 4.03s, train loss: 7.9308]
+Mon 09 Feb 2026 13:07:49 INFO  epoch 23 evaluating [time: 0.16s, valid_score: 0.976200]
+Mon 09 Feb 2026 13:07:49 INFO  valid result: 
+auc : 0.9762    logloss : 0.1682
+Mon 09 Feb 2026 13:07:49 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:53 INFO  epoch 24 training [time: 4.04s, train loss: 7.4537]
+Mon 09 Feb 2026 13:07:53 INFO  epoch 24 evaluating [time: 0.16s, valid_score: 0.976500]
+Mon 09 Feb 2026 13:07:53 INFO  valid result: 
+auc : 0.9765    logloss : 0.1672
+Mon 09 Feb 2026 13:07:53 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:07:57 INFO  epoch 25 training [time: 4.01s, train loss: 7.0165]
+Mon 09 Feb 2026 13:07:57 INFO  epoch 25 evaluating [time: 0.16s, valid_score: 0.976600]
+Mon 09 Feb 2026 13:07:57 INFO  valid result: 
+auc : 0.9766    logloss : 0.1666
+Mon 09 Feb 2026 13:07:57 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:01 INFO  epoch 26 training [time: 4.08s, train loss: 6.6156]
+Mon 09 Feb 2026 13:08:01 INFO  epoch 26 evaluating [time: 0.16s, valid_score: 0.977100]
+Mon 09 Feb 2026 13:08:01 INFO  valid result: 
+auc : 0.9771    logloss : 0.1655
+Mon 09 Feb 2026 13:08:01 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:05 INFO  epoch 27 training [time: 4.02s, train loss: 6.2229]
+Mon 09 Feb 2026 13:08:05 INFO  epoch 27 evaluating [time: 0.16s, valid_score: 0.977300]
+Mon 09 Feb 2026 13:08:05 INFO  valid result: 
+auc : 0.9773    logloss : 0.165
+Mon 09 Feb 2026 13:08:05 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:10 INFO  epoch 28 training [time: 4.11s, train loss: 5.8675]
+Mon 09 Feb 2026 13:08:10 INFO  epoch 28 evaluating [time: 0.16s, valid_score: 0.977400]
+Mon 09 Feb 2026 13:08:10 INFO  valid result: 
+auc : 0.9774    logloss : 0.1648
+Mon 09 Feb 2026 13:08:10 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:14 INFO  epoch 29 training [time: 4.02s, train loss: 5.5293]
+Mon 09 Feb 2026 13:08:14 INFO  epoch 29 evaluating [time: 0.16s, valid_score: 0.977600]
+Mon 09 Feb 2026 13:08:14 INFO  valid result: 
+auc : 0.9776    logloss : 0.1643
+Mon 09 Feb 2026 13:08:14 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:18 INFO  epoch 30 training [time: 4.07s, train loss: 5.2265]
+Mon 09 Feb 2026 13:08:18 INFO  epoch 30 evaluating [time: 0.16s, valid_score: 0.977800]
+Mon 09 Feb 2026 13:08:18 INFO  valid result: 
+auc : 0.9778    logloss : 0.1646
+Mon 09 Feb 2026 13:08:18 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:22 INFO  epoch 31 training [time: 4.06s, train loss: 4.9299]
+Mon 09 Feb 2026 13:08:22 INFO  epoch 31 evaluating [time: 0.17s, valid_score: 0.977900]
+Mon 09 Feb 2026 13:08:22 INFO  valid result: 
+auc : 0.9779    logloss : 0.1645
+Mon 09 Feb 2026 13:08:22 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:26 INFO  epoch 32 training [time: 3.99s, train loss: 4.6609]
+Mon 09 Feb 2026 13:08:26 INFO  epoch 32 evaluating [time: 0.16s, valid_score: 0.978200]
+Mon 09 Feb 2026 13:08:26 INFO  valid result: 
+auc : 0.9782    logloss : 0.1645
+Mon 09 Feb 2026 13:08:26 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:30 INFO  epoch 33 training [time: 3.99s, train loss: 4.3939]
+Mon 09 Feb 2026 13:08:31 INFO  epoch 33 evaluating [time: 0.16s, valid_score: 0.978200]
+Mon 09 Feb 2026 13:08:31 INFO  valid result: 
+auc : 0.9782    logloss : 0.165
+Mon 09 Feb 2026 13:08:31 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:35 INFO  epoch 34 training [time: 3.92s, train loss: 4.1566]
+Mon 09 Feb 2026 13:08:35 INFO  epoch 34 evaluating [time: 0.16s, valid_score: 0.978300]
+Mon 09 Feb 2026 13:08:35 INFO  valid result: 
+auc : 0.9783    logloss : 0.1658
+Mon 09 Feb 2026 13:08:35 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:39 INFO  epoch 35 training [time: 4.00s, train loss: 3.9366]
+Mon 09 Feb 2026 13:08:39 INFO  epoch 35 evaluating [time: 0.16s, valid_score: 0.978500]
+Mon 09 Feb 2026 13:08:39 INFO  valid result: 
+auc : 0.9785    logloss : 0.1657
+Mon 09 Feb 2026 13:08:39 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:43 INFO  epoch 36 training [time: 4.01s, train loss: 3.7161]
+Mon 09 Feb 2026 13:08:43 INFO  epoch 36 evaluating [time: 0.16s, valid_score: 0.978500]
+Mon 09 Feb 2026 13:08:43 INFO  valid result: 
+auc : 0.9785    logloss : 0.1664
+Mon 09 Feb 2026 13:08:43 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:47 INFO  epoch 37 training [time: 4.01s, train loss: 3.5178]
+Mon 09 Feb 2026 13:08:47 INFO  epoch 37 evaluating [time: 0.16s, valid_score: 0.978600]
+Mon 09 Feb 2026 13:08:47 INFO  valid result: 
+auc : 0.9786    logloss : 0.1667
+Mon 09 Feb 2026 13:08:47 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:51 INFO  epoch 38 training [time: 3.99s, train loss: 3.3251]
+Mon 09 Feb 2026 13:08:51 INFO  epoch 38 evaluating [time: 0.16s, valid_score: 0.978700]
+Mon 09 Feb 2026 13:08:51 INFO  valid result: 
+auc : 0.9787    logloss : 0.1675
+Mon 09 Feb 2026 13:08:51 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:08:55 INFO  epoch 39 training [time: 4.01s, train loss: 3.1415]
+Mon 09 Feb 2026 13:08:56 INFO  epoch 39 evaluating [time: 0.17s, valid_score: 0.978800]
+Mon 09 Feb 2026 13:08:56 INFO  valid result: 
+auc : 0.9788    logloss : 0.1681
+Mon 09 Feb 2026 13:08:56 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:00 INFO  epoch 40 training [time: 4.07s, train loss: 2.9736]
+Mon 09 Feb 2026 13:09:00 INFO  epoch 40 evaluating [time: 0.16s, valid_score: 0.978800]
+Mon 09 Feb 2026 13:09:00 INFO  valid result: 
+auc : 0.9788    logloss : 0.1691
+Mon 09 Feb 2026 13:09:00 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:04 INFO  epoch 41 training [time: 4.07s, train loss: 2.8144]
+Mon 09 Feb 2026 13:09:04 INFO  epoch 41 evaluating [time: 0.16s, valid_score: 0.979000]
+Mon 09 Feb 2026 13:09:04 INFO  valid result: 
+auc : 0.979    logloss : 0.1696
+Mon 09 Feb 2026 13:09:04 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:08 INFO  epoch 42 training [time: 4.03s, train loss: 2.6679]
+Mon 09 Feb 2026 13:09:08 INFO  epoch 42 evaluating [time: 0.16s, valid_score: 0.979000]
+Mon 09 Feb 2026 13:09:08 INFO  valid result: 
+auc : 0.979    logloss : 0.1706
+Mon 09 Feb 2026 13:09:08 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:12 INFO  epoch 43 training [time: 4.13s, train loss: 2.5177]
+Mon 09 Feb 2026 13:09:13 INFO  epoch 43 evaluating [time: 0.16s, valid_score: 0.979100]
+Mon 09 Feb 2026 13:09:13 INFO  valid result: 
+auc : 0.9791    logloss : 0.1714
+Mon 09 Feb 2026 13:09:13 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:17 INFO  epoch 44 training [time: 4.06s, train loss: 2.3858]
+Mon 09 Feb 2026 13:09:17 INFO  epoch 44 evaluating [time: 0.16s, valid_score: 0.979200]
+Mon 09 Feb 2026 13:09:17 INFO  valid result: 
+auc : 0.9792    logloss : 0.1721
+Mon 09 Feb 2026 13:09:17 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:21 INFO  epoch 45 training [time: 4.02s, train loss: 2.2568]
+Mon 09 Feb 2026 13:09:21 INFO  epoch 45 evaluating [time: 0.16s, valid_score: 0.979100]
+Mon 09 Feb 2026 13:09:21 INFO  valid result: 
+auc : 0.9791    logloss : 0.1734
+Mon 09 Feb 2026 13:09:25 INFO  epoch 46 training [time: 4.06s, train loss: 2.1377]
+Mon 09 Feb 2026 13:09:25 INFO  epoch 46 evaluating [time: 0.16s, valid_score: 0.979200]
+Mon 09 Feb 2026 13:09:25 INFO  valid result: 
+auc : 0.9792    logloss : 0.1741
+Mon 09 Feb 2026 13:09:25 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:29 INFO  epoch 47 training [time: 3.95s, train loss: 2.0200]
+Mon 09 Feb 2026 13:09:29 INFO  epoch 47 evaluating [time: 0.16s, valid_score: 0.979300]
+Mon 09 Feb 2026 13:09:29 INFO  valid result: 
+auc : 0.9793    logloss : 0.175
+Mon 09 Feb 2026 13:09:29 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:33 INFO  epoch 48 training [time: 4.04s, train loss: 1.9138]
+Mon 09 Feb 2026 13:09:34 INFO  epoch 48 evaluating [time: 0.16s, valid_score: 0.979300]
+Mon 09 Feb 2026 13:09:34 INFO  valid result: 
+auc : 0.9793    logloss : 0.1763
+Mon 09 Feb 2026 13:09:34 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:38 INFO  epoch 49 training [time: 4.05s, train loss: 1.8076]
+Mon 09 Feb 2026 13:09:38 INFO  epoch 49 evaluating [time: 0.16s, valid_score: 0.979500]
+Mon 09 Feb 2026 13:09:38 INFO  valid result: 
+auc : 0.9795    logloss : 0.1767
+Mon 09 Feb 2026 13:09:38 INFO  Saving current: outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:38 INFO  Loading model structure and parameters from outputs/frappe/fwfm/FwFM-Feb-09-2026_13-06-08.pth
+Mon 09 Feb 2026 13:09:39 INFO  The running environment of this training is as follows:
++-------------+------------------+
+| Environment |      Usage       |
++=============+==================+
+| CPU         |      0.00 %      |
++-------------+------------------+
+| GPU         |  0.58 G/23.56 G  |
++-------------+------------------+
+| Memory      | 1.81 G/1006.54 G |
++-------------+------------------+
+Mon 09 Feb 2026 13:09:39 INFO  best valid : OrderedDict([('auc', 0.9795), ('logloss', 0.1767)])
+Mon 09 Feb 2026 13:09:39 INFO  test result: OrderedDict([('auc', 0.9781), ('logloss', 0.1847)])

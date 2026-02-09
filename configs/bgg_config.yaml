@@ -6,8 +6,8 @@ use_gpu: true
 
 # Path configuration
 paths:
-  data: ./data
-  output_base: ./outputs
+  data: ./datasets/bgg
+  output_base: ./outputs/bgg
 
 # Training settings
 training:

@@ -130,8 +130,8 @@ class YelpEvaluator(FrappeEvaluator):
 
 if __name__ == '__main__':
     config = {
-        'test_path': './data/yelp/yelp_test.csv',
-        'train_path': './data/yelp/yelp_train.csv',
+        'test_path': './datasets/yelp/yelp_test.csv',
+        'train_path': './datasets/yelp/yelp_train.csv',
         'results_dir': './outputs/yelp',
         'output_dir': './results/yelp/context_metrics',
         'cutoffs': [5, 10, 20],

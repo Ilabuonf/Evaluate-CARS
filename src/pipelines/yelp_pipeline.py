@@ -29,16 +29,14 @@ class YelpPipeline(BasePipeline):
     
     # Yelp context features
     CONTEXT_FEATURES = [
-        'time_of_day', 'day_of_week', 'is_weekend',
-        'party_size', 'occasion',
-        'weather', 'season'
+        'hour_of_day', 'day_of_week', 'is_weekend', 
+        'city', 'category', 'price_range'
     ]
     
     # Feature groups
     FEATURE_GROUPS = {
-        'temporal': ['time_of_day', 'day_of_week', 'is_weekend'],
-        'social': ['party_size', 'occasion'],
-        'environmental': ['weather', 'season']
+        'temporal': ['hour_of_day', 'day_of_week', 'is_weekend'],
+        'business_info': ['city', 'category', 'price_range']
     }
     
     def _get_column_names(self) -> Dict[str, str]:
@@ -50,28 +48,32 @@ class YelpPipeline(BasePipeline):
         }
     
     def _load_dataset_splits(self):
-        """Load Yelp CSV splits"""
+        """Load Yelp CSV splits and align columns"""
         data_path = Path(self.config['paths']['data'])
         
-        # Load splits
+        # Carica i file (controlla che i nomi siano corretti)
         self.train_df = pd.read_csv(data_path / 'yelp_train.csv')
         self.valid_df = pd.read_csv(data_path / 'yelp_valid.csv')
         self.test_df = pd.read_csv(data_path / 'yelp_test.csv')
         
-        # Convert ratings to binary labels (>= 4 stars = positive)
+        # Gestione soglia rating
         threshold = self.config.get('rating_threshold', 4.0)
         for df in [self.train_df, self.valid_df, self.test_df]:
             df['label'] = (df['stars'] >= threshold).astype(int)
         
-        # Create context info from training data
-        item_cols = ['business_id'] + self.CONTEXT_FEATURES
+        # Creazione info di contesto per gli item
+        # Usiamo solo le colonne che esistono davvero nel tuo CSV
+        available_context = [c for c in self.CONTEXT_FEATURES if c in self.train_df.columns]
+        item_cols = ['business_id'] + available_context
+        
         self.context_info = (
             self.train_df[item_cols]
             .groupby('business_id')
-            .agg(lambda x: x.mode()[0] if len(x.mode()) > 0 else x.iloc[0])
+            .agg(lambda x: x.mode()[0] if not x.mode().empty else x.iloc[0])
             .reset_index()
             .rename(columns={'business_id': 'item_id:token'})
         )
+        print(f"✓ Yelp context aligned with columns: {available_context}")
 
 
 def main():
