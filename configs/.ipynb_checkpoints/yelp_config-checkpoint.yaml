@@ -1,0 +1,119 @@
+# Yelp Dataset Context-Aware Recommendation Configuration
+# Following BGG Study Methodology
+
+# Dataset paths
+paths:
+  data: "./data/yelp"           # Path to Yelp data files
+  output_base: "./results/yelp"  # Base path for results
+
+# Data processing
+data:
+  rating_threshold: 4.0          # Ratings >= 4.0 are positive (label=1)
+  
+# Training configuration
+training:
+  seed: 2024
+  gpu: 0                         # GPU ID to use
+  
+# Evaluation settings
+evaluation:
+  top_k: 50                      # Number of recommendations to generate
+  ranx_metrics:                  # Traditional ranking metrics
+    - "ndcg@5"
+    - "ndcg@10"
+    - "map@10"
+    - "mrr@10"
+    - "precision@5"
+    - "recall@10"
+
+# Models to train and evaluate
+models:
+  # Baseline models (always included)
+  Random:
+    enabled: true
+    
+  Pop:
+    enabled: true
+  
+  # Context-aware CTR models
+  FM:
+    enabled: true
+    params:
+      epochs: 50
+      batch_size: 2048
+      lr: 0.001
+      learner: "adam"
+      embedding_size: 64
+      reg_weight: 0.0001
+      stopping_step: 10
+  
+  FFM:
+    enabled: true
+    params:
+      epochs: 50
+      batch_size: 2048
+      lr: 0.001
+      learner: "adam"
+      embedding_size: 64
+      reg_weight: 0.0001
+      stopping_step: 10
+  
+  AFM:
+    enabled: true
+    params:
+      epochs: 50
+      batch_size: 2048
+      lr: 0.001
+      learner: "adam"
+      embedding_size: 64
+      attention_size: 64
+      reg_weight: 0.0001
+      dropout: 0.1
+      stopping_step: 10
+  
+  FwFM:
+    enabled: true
+    params:
+      epochs: 50
+      batch_size: 2048
+      lr: 0.001
+      learner: "adam"
+      embedding_size: 64
+      reg_weight: 0.0001
+      stopping_step: 10
+
+# Context features configuration
+context:
+  # Feature groups for dimensional analysis
+  feature_groups:
+    temporal:
+      - hour_of_day
+      - day_of_week
+      - is_weekend
+    social:
+      - review_length
+      - user_elite
+    spatial:
+      - city
+      - category
+      - price_range
+  
+  # Context-aware metrics settings
+  metrics:
+    alpha: 0.5                   # Penalty parameter for CS/WCS
+    k_values: [5, 10, 20]        # K values for @K metrics
+
+# Expected data format
+# Files: yelp_train.csv, yelp_valid.csv, yelp_test.csv
+# Columns:
+#   - user_id: User ID (string)
+#   - business_id: Business ID (string)
+#   - stars: Rating (1-5)
+#   - hour_of_day: Hour (0-23)
+#   - day_of_week: Day (0-6, Monday=0)
+#   - is_weekend: Weekend flag (0/1)
+#   - review_length: Review length category (0-2)
+#   - user_elite: Elite user flag (0/1)
+#   - city: City name (string)
+#   - category: Business category (string)
+#   - price_range: Price range (1-4, can have NaN)
