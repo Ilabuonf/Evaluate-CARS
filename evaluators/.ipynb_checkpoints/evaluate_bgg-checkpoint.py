@@ -1,759 +1,334 @@
-"""
-BGG Dataset Evaluator
-=====================
-
-Consolidated evaluator for BoardGameGeek dataset that computes:
-- Context Similarity Metrics (CS, WCA, Friction)
-- Context-Weighted Ranking Metrics (CW-nDCG, CW-MAP)
-- All advanced context metrics (ACC, CR, CRC, CGB)
-
-Usage:
-    from evaluators import BGGEvaluator
-    
-    config = {
-        'test_path': './data/test_df.tsv',
-        'context_info_path': './data/context_info.tsv',
-        'results_dir': './outputs',
-        'output_dir': './results/bgg',
-        'cutoffs': [5, 10, 20],
-        'alpha': 0.5,
-        'relevance_threshold': 7.0
-    }
-    
-    evaluator = BGGEvaluator(config)
-    evaluator.run()
-"""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pandas as pd
 import numpy as np
-from pathlib import Path
 from datetime import datetime
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-import seaborn as sns
+from typing import Dict
 import warnings
-from scipy.stats import spearmanr, ConstantInputWarning
-from typing import Dict, List, Tuple
-
 warnings.filterwarnings('ignore')
 
+from src.metrics import (
+    compute_acc,
+    compute_cs_wcs,
+    compute_similarity_metrics,
+    compute_context_recall,
+    compute_context_ranking_correlation,
+    compute_context_group_balance
+)
 
-class BGGEvaluator:
-    """Complete evaluator for BoardGameGeek dataset"""
+# CW Metrics
+from src.metrics.weighted_ranking import (
+    compute_context_weighted_ndcg,
+    compute_context_weighted_map
+)
+
+try:
+    from ranx import Qrels, Run, evaluate
+    RANX_AVAILABLE = True
+except ImportError:
+    RANX_AVAILABLE = False
+
+try:
+    from sklearn.metrics import roc_auc_score, log_loss
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+
+
+class CompleteBGGEvaluator:
+    """Complete BGG evaluator matching all paper tables"""
+    
+    CONTEXT_FEATURES = ['playing_time', 'gaming_mood', 'social_companion']
+    
+    FEATURE_GROUPS = {
+        'temporal': ['playing_time'],
+        'experiential': ['gaming_mood'],
+        'social': ['social_companion']
+    }
     
     def __init__(self, config: Dict):
         self.config = config
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.output_dir = Path(config['output_dir'])
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Store results
         self.results = {}
         
-    # =========================================================================
-    # DATA LOADING
-    # =========================================================================
-    
     def load_test_set(self):
-        """Load test set with ratings"""
+        """Load BGG test set and standardize column names"""
         print("="*70)
-        print("LOADING TEST SET")
+        print("LOADING BGG TEST SET")
         print("="*70)
         
         test_path = Path(self.config['test_path'])
+        self.test_df = pd.read_csv(test_path, sep='\t')
         
-        dtypes = {
-            'user_id:token': 'category',
-            'game_id:token': 'category',
-            'context_id': 'int32',
-            'rating:float': 'float32'
-        }
+        # STANDARDIZZAZIONE: game_id -> item_id
+        self.test_df = self.test_df.rename(columns={'game_id:token': 'item_id:token'})
         
-        self.test_df = pd.read_csv(test_path, sep='\t', dtype=dtypes, engine='c')
+        for col in ['user_id:token', 'item_id:token', 'context_id']:
+            self.test_df[col] = self.test_df[col].astype(str).str.strip()
         
-        # Create query_id
-        self.test_df['query_id'] = (
-            self.test_df['user_id:token'].astype(str) + '_' + 
-            self.test_df['context_id'].astype(str)
-        )
+        self.test_df['query_id'] = self.test_df['user_id:token'] + '_' + self.test_df['context_id']
         
-        # Store ground truth
         self.ground_truth = {}
         for _, row in self.test_df.iterrows():
-            qid = row['query_id']
-            item = str(row['game_id:token'])
-            rating = row['rating:float']
-            
-            if qid not in self.ground_truth:
-                self.ground_truth[qid] = {}
+            qid, item, rating = row['query_id'], row['item_id:token'], row['rating:float']
+            if qid not in self.ground_truth: self.ground_truth[qid] = {}
             self.ground_truth[qid][item] = rating
-        
-        self.unique_query_ids = self.test_df['query_id'].unique()
-        
-        print(f"✓ Test set loaded: {self.test_df.shape}")
-        print(f"  Unique queries: {len(self.unique_query_ids):,}")
-        print(f"  Unique items: {self.test_df['game_id:token'].nunique():,}")
-        print(f"  Rating range: [{self.test_df['rating:float'].min():.1f}, "
-              f"{self.test_df['rating:float'].max():.1f}]")
-        print()
-        
+            
+        print(f"✓ Loaded: {self.test_df.shape}\n  Queries: {len(self.ground_truth):,}\n")
+
     def load_context_info(self):
-        """Load context definitions and compute IDF weights"""
-        print("Loading context definitions...")
+        """Load context info and LINK it to items via train set"""
+        print("Loading context information...")
+        
+        # 1. Carica definizioni contesti
         ctx_path = Path(self.config['context_info_path'])
-        self.ctx_info = pd.read_csv(ctx_path, sep='\t', index_col='context_id')
+        ctx_df = pd.read_csv(ctx_path, sep='\t')
+        if 'playing_time' not in ctx_df.columns:
+            ctx_df = self._reconstruct_categorical(ctx_df)
         
-        print(f"✓ Context definitions loaded: {len(self.ctx_info)}")
-        print(f"  Features: {len(self.ctx_info.columns)}")
+        # 2. Carica train_df per mappare item <-> context_id
+        train_path = Path(self.config['test_path']).parent / 'train_df.tsv'
+        train_df = pd.read_csv(train_path, sep='\t', usecols=['game_id:token', 'context_id'])
+        train_df = train_df.rename(columns={'game_id:token': 'item_id:token'})
         
-        # Convert to numpy for vectorization
-        self.ctx_array = self.ctx_info.values.astype(float)
-        self.ctx_index = self.ctx_info.index.values
-        self.ctx_dict = {cid: idx for idx, cid in enumerate(self.ctx_index)}
+        # 3. Merge per avere un DataFrame: [item_id, playing_time, gaming_mood, social_companion]
+        merged_ctx = train_df.merge(ctx_df, on='context_id', how='left')
         
-        # Compute IDF weights
-        self._compute_feature_importance()
-        print()
-    
-    def _compute_feature_importance(self):
-        """Compute IDF-based feature weights"""
-        df = self.ctx_array.sum(axis=0)
-        N = self.ctx_array.shape[0]
-        raw_idf = np.log((N + 1) / (df + 1)) + 1.0
-        self.feature_weights = np.nan_to_num(raw_idf, nan=0.0)
+        # Standardizza nomi e tipi
+        merged_ctx['item_id:token'] = merged_ctx['item_id:token'].astype(str).str.strip()
+        self.context_info = merged_ctx.drop_duplicates(subset=['item_id:token'])
         
-        print(f"  IDF weights computed:")
-        print(f"    Range: [{self.feature_weights.min():.4f}, "
-              f"{self.feature_weights.max():.4f}]")
-        print(f"    Mean: {self.feature_weights.mean():.4f}")
-    
-    # =========================================================================
-    # SIMILARITY METRICS (Vectorized)
-    # =========================================================================
-    
-    def compute_cs_vectorized(self, c_q, item_contexts, alpha):
-        """Context Satisfaction - Modified Jaccard"""
-        rec = c_q.astype(bool)
-        items = item_contexts.astype(bool)
+        print(f"✓ Context info linked to {len(self.context_info)} items\n")
+
+    def _reconstruct_categorical(self, df):
+        def collapse(dataframe, prefix, new_name):
+            cols = [c for c in dataframe.columns if c.startswith(prefix)]
+            if not cols: return dataframe
+            dataframe[new_name] = dataframe[cols].idxmax(axis=1).str.replace(prefix, "").str.replace(":float", "")
+            return dataframe
+        df = collapse(df, "playing_time_", "playing_time")
+        df = collapse(df, "gaming_mood_", "gaming_mood")
+        df = collapse(df, "social_companion_", "social_companion")
+        return df
+
+    def evaluate_model(self, model_name: str, pred_path: Path) -> Dict:
+        print(f"  → {model_name}")
+        pred_df = pd.read_csv(pred_path, sep='\t')
         
-        w_int = rec & items
-        w_uni = rec | items
-        w_diff = rec & ~items
+        # Standardizza colonne
+        pred_df = pred_df.rename(columns={'game_id:token': 'item_id:token'})
+        for col in ['user_id:token', 'item_id:token', 'q_context_id']:
+            pred_df[col] = pred_df[col].astype(str).str.strip()
         
-        num = np.sum(w_int.astype(float) * self.feature_weights, axis=1)
-        den = np.sum(w_uni.astype(float) * self.feature_weights, axis=1)
-        mis = np.sum(w_diff.astype(float) * self.feature_weights, axis=1)
-        req = np.sum(rec.astype(float) * self.feature_weights)
-        
-        if req <= 0:
-            return np.zeros(len(item_contexts))
-        
-        cs_scores = num / (den + alpha * (mis / req))
-        return np.nan_to_num(cs_scores, nan=0.0)
-    
-    def compute_wca_vectorized(self, c_q, item_contexts):
-        """Weighted Context Alignment - Cosine Similarity"""
-        weighted_q = c_q * self.feature_weights
-        weighted_items = item_contexts * self.feature_weights
-        
-        dot_products = np.dot(weighted_items, weighted_q)
-        norm_q = np.linalg.norm(weighted_q)
-        norm_items = np.linalg.norm(weighted_items, axis=1)
-        
-        if norm_q == 0:
-            return np.zeros(len(item_contexts))
-        
-        wca_scores = dot_products / (norm_q * norm_items + 1e-10)
-        return np.clip(wca_scores, 0.0, 1.0)
-    
-    def compute_friction_vectorized(self, c_q, item_contexts):
-        """Context Friction - Inverted Weighted Hamming"""
-        differences = (c_q != item_contexts).astype(float)
-        weighted_friction = np.sum(differences * self.feature_weights, axis=1)
-        max_friction = np.sum(self.feature_weights)
-        
-        if max_friction == 0:
-            return np.ones(len(item_contexts))
-        
-        normalized_friction = weighted_friction / max_friction
-        return 1.0 - normalized_friction
-    
-    # =========================================================================
-    # RANKING METRICS
-    # =========================================================================
-    
-    def compute_dcg(self, relevances, k):
-        """Standard DCG"""
-        relevances = np.array(relevances[:k])
-        if len(relevances) == 0:
-            return 0.0
-        
-        actual_k = len(relevances)
-        gains = 2**relevances - 1
-        discounts = np.log2(np.arange(2, actual_k + 2))
-        return np.sum(gains / discounts)
-    
-    def compute_idcg(self, ground_truth_ratings, k):
-        """Ideal DCG"""
-        if not ground_truth_ratings:
-            return 0.0
-        
-        sorted_ratings = sorted(ground_truth_ratings, reverse=True)
-        return self.compute_dcg(sorted_ratings, k)
-    
-    def compute_cw_ndcg(self, query_id, ranked_items, similarity_scores, k):
-        """Context-Weighted nDCG"""
-        if query_id not in self.ground_truth:
-            return np.nan
-        
-        gt = self.ground_truth[query_id]
-        relevances = np.array([gt.get(item, 0.0) for item in ranked_items[:k]])
-        similarities = np.array(similarity_scores[:k])
-        
-        if len(relevances) == 0:
-            return 0.0
-        
-        # Weighted gains
-        gains = 2**relevances - 1
-        weighted_gains = gains * similarities
-        
-        # Position discount
-        positions = np.arange(1, len(relevances) + 1)
-        position_discount = np.log2(positions + 1)
-        
-        cw_dcg = np.sum(weighted_gains / position_discount)
-        
-        # IDCG
-        all_ratings = sorted(gt.values(), reverse=True)[:k]
-        if not all_ratings:
-            return 0.0
-        
-        ideal_gains = 2**np.array(all_ratings) - 1
-        ideal_positions = np.arange(1, len(all_ratings) + 1)
-        ideal_discount = np.log2(ideal_positions + 1)
-        cw_idcg = np.sum(ideal_gains / ideal_discount)
-        
-        return cw_dcg / cw_idcg if cw_idcg > 0 else 0.0
-    
-    def compute_cw_map(self, query_id, ranked_items, similarity_scores, k):
-        """Context-Weighted MAP"""
-        if query_id not in self.ground_truth:
-            return np.nan
-        
-        gt = self.ground_truth[query_id]
-        threshold = self.config.get('relevance_threshold', 7.0)
-        
-        num_relevant = sum(1 for rating in gt.values() if rating >= threshold)
-        
-        if num_relevant == 0:
-            return 0.0
-        
-        relevances = []
-        for item in ranked_items[:k]:
-            rel = gt.get(item, 0.0)
-            relevances.append(rel)
-        
-        if not relevances:
-            return 0.0
-        
-        relevances = np.array(relevances)
-        similarities = np.array(similarity_scores[:k])
-        
-        binary_rel = (relevances >= threshold).astype(float)
-        
-        ap_sum = 0.0
-        num_relevant_seen = 0
-        
-        for i in range(len(ranked_items[:k])):
-            if binary_rel[i] > 0:
-                num_relevant_seen += 1
-                precision = num_relevant_seen / (i + 1)
-                weighted_precision = precision * similarities[i]
-                ap_sum += weighted_precision
-        
-        if num_relevant_seen == 0:
-            return 0.0
-        
-        return ap_sum / num_relevant
-    
-    # =========================================================================
-    # MODEL EVALUATION
-    # =========================================================================
-    
-    def evaluate_model(self, model_name, predictions_path, cutoffs, alpha):
-        """Evaluate all metrics for a single model"""
-        print(f"→ Evaluating {model_name}...")
-        
-        if not predictions_path.exists():
-            print(f"  Predictions not found")
-            return None
-        
-        # Load predictions
-        pred_df = pd.read_csv(predictions_path, sep='\t', engine='c')
-        
-        pred_df['user_id:token'] = pred_df['user_id:token'].astype(str).str.strip()
-        pred_df['item_id:token'] = pred_df['item_id:token'].astype(str).str.strip()
-        pred_df['q_context_id'] = pred_df['q_context_id'].astype(str).str.strip()
-        
-        pred_df['query_id'] = (
-            pred_df['user_id:token'] + '_' + pred_df['q_context_id']
-        )
-        
-        # Check for item_context_id
-        if 'item_context_id' not in pred_df.columns:
-            print(f"  Baseline model - cannot compute context metrics")
-            return None
-        
-        pred_df['item_context_id'] = pred_df['item_context_id'].astype('Int64')
-        
-        # Check coverage
-        coverage = pred_df['item_context_id'].notna().sum() / len(pred_df) * 100
-        print(f"  Context coverage: {coverage:.1f}%")
-        
-        if coverage < 10:
-            print(f"  Insufficient context coverage")
-            return None
-        
-        # Sort by score
-        pred_df = pred_df.sort_values(
-            ['query_id', 'prediction'],
-            ascending=[True, False]
-        ).reset_index(drop=True)
-        
-        # Pre-compute item context vectors
-        unique_items = pred_df['item_context_id'].dropna().unique()
-        item_ctx_vectors = {}
-        
-        for iid in unique_items:
-            iid_int = int(iid)
-            if iid_int in self.ctx_dict:
-                item_ctx_vectors[iid_int] = self.ctx_array[self.ctx_dict[iid_int]]
-        
-        # Group by query
-        grouped = pred_df.groupby('query_id', sort=False)
-        
-        print(f"  Computing similarity + ranking metrics...")
-        
-        # Results storage
         results = {}
         
-        # Similarity metrics at cutoffs
-        for metric_name in ['CS', 'WCA', 'Friction']:
-            results[f'{metric_name}@all'] = []
-            for k in cutoffs:
-                results[f'{metric_name}@{k}'] = []
+        # 1. Traditional
+        print(f"      Traditional...")
+        results.update(self._run_traditional(pred_df))
         
-        # Ranking metrics
-        for metric_name in ['CS', 'WCA', 'Friction']:
-            for k in cutoffs:
-                results[f'{metric_name}_CW-nDCG@{k}'] = []
-                results[f'{metric_name}_CW-MAP@{k}'] = []
+        # 2. Context Metrics
+        print(f"      Context metrics...")
+        k_val = [5]
+        try:
+            results.update(compute_acc(pred_df, self.context_info, self.CONTEXT_FEATURES, k_val))
+            results.update(compute_cs_wcs(pred_df, self.context_info, self.CONTEXT_FEATURES, alpha=0.5, k_values=k_val))
+            results.update(compute_similarity_metrics(pred_df, self.context_info, self.CONTEXT_FEATURES, k_val))
+            results.update(compute_context_recall(pred_df, self.context_info, self.CONTEXT_FEATURES, k_val))
+            results.update(compute_context_ranking_correlation(pred_df, self.context_info, self.CONTEXT_FEATURES, k_val))
+            results.update(compute_context_group_balance(pred_df, self.context_info, self.CONTEXT_FEATURES, self.FEATURE_GROUPS, k_val))
+        except Exception as e:
+            print(f"        Context metrics error: {e}")
         
-        queries_evaluated = 0
-        
-        for query_id in tqdm(self.unique_query_ids, desc="  ", leave=False):
-            if query_id not in grouped.groups:
-                continue
+        # 3. CW Ranking Metrics (NEW!)
+        print(f"      CW-nDCG, CW-MAP...")
+        try:
+            # Prepare for CW metrics - need ground truth dict
+            cw_pred = pred_df.copy()
+            cw_pred['query_id'] = cw_pred['user_id:token'] + '_' + cw_pred['q_context_id']
             
-            group = grouped.get_group(query_id)
+            # Add label column from ground truth
+            labels = []
+            for _, row in cw_pred.iterrows():
+                qid = row['query_id']
+                item = row['item_id:token']
+                rating = self.ground_truth.get(qid, {}).get(item, 0.0)
+                labels.append(1.0 if rating >= 7.0 else 0.0)
+            cw_pred['label'] = labels
             
-            # Get query context
-            q_context_id = group.iloc[0]['q_context_id']
+            # Compute CW metrics
+            cw_ndcg = compute_context_weighted_ndcg(
+                cw_pred, self.context_info, self.CONTEXT_FEATURES, k_values=[5, 10, 20]
+            )
+            results.update(cw_ndcg)
+            
+            cw_map = compute_context_weighted_map(
+                cw_pred, self.context_info, self.CONTEXT_FEATURES, k_values=[5, 10, 20]
+            )
+            results.update(cw_map)
+        except Exception as e:
+            print(f"        CW metrics error: {e}")
+        
+        # 4. Dimensional
+        print(f"      Dimensional...")
+        for g_name, g_feats in self.FEATURE_GROUPS.items():
             try:
-                q_context_id = int(q_context_id)
-            except (ValueError, TypeError):
-                continue
+                w_res = compute_cs_wcs(pred_df, self.context_info, g_feats, alpha=0.5, k_values=[5])
+                if 'WCS@5' in w_res: 
+                    results[f'WCS_{g_name}@5'] = w_res['WCS@5']
+            except:
+                pass
             
-            if q_context_id not in self.ctx_dict:
-                continue
-            
-            c_vec = self.ctx_array[self.ctx_dict[q_context_id]]
-            
-            # Get ranked items
-            ranked_items = []
-            item_contexts_list = []
-            
-            for _, row in group.iterrows():
-                item_id = row['item_id:token']
-                item_ctx_id = row['item_context_id']
-                
-                if pd.notna(item_ctx_id):
-                    item_ctx_id = int(item_ctx_id)
-                    if item_ctx_id in item_ctx_vectors:
-                        ranked_items.append(item_id)
-                        item_contexts_list.append(item_ctx_vectors[item_ctx_id])
-            
-            if not ranked_items:
-                continue
-            
-            # Convert to matrix
-            item_matrix = np.array(item_contexts_list)
-            
-            # Compute similarities
-            cs_scores = self.compute_cs_vectorized(c_vec, item_matrix, alpha)
-            wca_scores = self.compute_wca_vectorized(c_vec, item_matrix)
-            friction_scores = self.compute_friction_vectorized(c_vec, item_matrix)
-            
-            # Store average similarities
-            results['CS@all'].append(np.mean(cs_scores))
-            results['WCA@all'].append(np.mean(wca_scores))
-            results['Friction@all'].append(np.mean(friction_scores))
-            
-            # Evaluate at each cutoff
-            for k in cutoffs:
-                # Average similarity at cutoff
-                results[f'CS@{k}'].append(np.mean(cs_scores[:k]))
-                results[f'WCA@{k}'].append(np.mean(wca_scores[:k]))
-                results[f'Friction@{k}'].append(np.mean(friction_scores[:k]))
-                
-                # CS-based ranking
-                cs_ndcg = self.compute_cw_ndcg(query_id, ranked_items, cs_scores, k)
-                cs_map = self.compute_cw_map(query_id, ranked_items, cs_scores, k)
-                
-                if not np.isnan(cs_ndcg):
-                    results[f'CS_CW-nDCG@{k}'].append(cs_ndcg)
-                if not np.isnan(cs_map):
-                    results[f'CS_CW-MAP@{k}'].append(cs_map)
-                
-                # WCA-based ranking
-                wca_ndcg = self.compute_cw_ndcg(query_id, ranked_items, wca_scores, k)
-                wca_map = self.compute_cw_map(query_id, ranked_items, wca_scores, k)
-                
-                if not np.isnan(wca_ndcg):
-                    results[f'WCA_CW-nDCG@{k}'].append(wca_ndcg)
-                if not np.isnan(wca_map):
-                    results[f'WCA_CW-MAP@{k}'].append(wca_map)
-                
-                # Friction-based ranking
-                friction_ndcg = self.compute_cw_ndcg(query_id, ranked_items, friction_scores, k)
-                friction_map = self.compute_cw_map(query_id, ranked_items, friction_scores, k)
-                
-                if not np.isnan(friction_ndcg):
-                    results[f'Friction_CW-nDCG@{k}'].append(friction_ndcg)
-                if not np.isnan(friction_map):
-                    results[f'Friction_CW-MAP@{k}'].append(friction_map)
-            
-            queries_evaluated += 1
+        print(f"      ✓ Completed")
+        return results
+
+    def _run_traditional(self, pred_df):
+        """Traditional metrics with FIXED Ranx grouping"""
+        res = {}
         
-        if queries_evaluated == 0:
-            print(f"  No queries evaluated")
-            return None
+        # AUC/LogLoss
+        if SKLEARN_AVAILABLE:
+            m = pred_df.merge(
+                self.test_df[['user_id:token', 'item_id:token', 'context_id', 'rating:float']], 
+                left_on=['user_id:token', 'item_id:token', 'q_context_id'],
+                right_on=['user_id:token', 'item_id:token', 'context_id'], 
+                how='inner'
+            )
+            
+            if len(m) > 0 and len(np.unique(m['rating:float'])) > 1:
+                y_true = (m['rating:float'] >= 7.0).astype(int)
+                y_scores = m['prediction'].values
+                
+                try:
+                    res['AUC'] = roc_auc_score(y_true, y_scores)
+                except:
+                    res['AUC'] = np.nan
+                
+                y_norm = (y_scores - y_scores.min()) / (y_scores.max() - y_scores.min() + 1e-10)
+                y_norm = np.clip(y_norm, 1e-10, 1 - 1e-10)
+                try:
+                    res['LogLoss'] = log_loss(y_true, y_norm, labels=[0, 1])
+                except:
+                    res['LogLoss'] = np.nan
         
-        print(f"  Evaluated {queries_evaluated}/{len(self.unique_query_ids)} queries")
+        # Ranx - FIX: group by query_id (user + context), not just user_id!
+        if RANX_AVAILABLE:
+            try:
+                # Create query_id
+                pred_df['query_id'] = pred_df['user_id:token'] + '_' + pred_df['q_context_id']
+                
+                # Qrels
+                qrels_dict = {}
+                for qid, items in self.ground_truth.items():
+                    qrels_dict[qid] = {item: int(rating >= 7.0) for item, rating in items.items()}
+                qrels = Qrels(qrels_dict)
+                
+                # Run - group by QUERY_ID (not user_id!)
+                run_dict = {}
+                for query_id, group in pred_df.groupby('query_id'):
+                    run_dict[query_id] = {
+                        row['item_id:token']: float(row['prediction'])
+                        for _, row in group.iterrows()
+                    }
+                run = Run(run_dict)
+                
+                # Evaluate
+                ranx_res = evaluate(
+                    qrels, run,
+                    ['ndcg@5', 'ndcg@10', 'map@10', 'mrr@10', 'precision@5', 'recall@10'],
+                    make_comparable=True
+                )
+                
+                res['nDCG@5'] = ranx_res.get('ndcg@5', np.nan)
+                res['nDCG@10'] = ranx_res.get('ndcg@10', np.nan)
+                res['MAP@10'] = ranx_res.get('map@10', np.nan)
+                res['MRR@10'] = ranx_res.get('mrr@10', np.nan)
+                res['P@5'] = ranx_res.get('precision@5', np.nan)
+                res['R@10'] = ranx_res.get('recall@10', np.nan)
+                
+            except Exception as e:
+                print(f"        Ranx error: {e}")
+                for m in ['nDCG@5', 'nDCG@10', 'MAP@10', 'MRR@10', 'P@5', 'R@10']:
+                    res[m] = np.nan
         
-        # Calculate averages
-        final_results = {}
-        for metric_name, values in results.items():
-            if values:
-                final_results[metric_name] = np.mean(values)
-        
-        # Print results
-        print(f"\n  Similarity Metrics:")
-        for sim in ['CS', 'WCA', 'Friction']:
-            print(f"    {sim}:")
-            for k in ['all'] + cutoffs:
-                key = f'{sim}@{k}'
-                if key in final_results:
-                    print(f"      @{k}: {final_results[key]:.4f}")
-        
-        print(f"\n  Ranking Metrics:")
-        for sim in ['CS', 'WCA', 'Friction']:
-            print(f"    {sim}-weighted:")
-            for k in cutoffs:
-                ndcg_key = f'{sim}_CW-nDCG@{k}'
-                map_key = f'{sim}_CW-MAP@{k}'
-                if ndcg_key in final_results:
-                    print(f"      CW-nDCG@{k}: {final_results[ndcg_key]:.4f}")
-                if map_key in final_results:
-                    print(f"      CW-MAP@{k}: {final_results[map_key]:.4f}")
-        
-        print(f"  Completed")
-        return final_results
-    
+        return res
+
     def evaluate_all_models(self):
-        """Evaluate all models"""
-        print("\n" + "="*70)
-        print("EVALUATING ALL METRICS")
-        print("="*70)
-        print()
+        print("\n" + "="*70 + "\nEVALUATING ALL MODELS\n" + "="*70)
+        r_dir = Path(self.config['results_dir'])
+        model_dirs = [d for d in r_dir.iterdir() if d.is_dir() and not d.name.startswith(('.', 'context', 'evaluation'))]
         
-        cutoffs = self.config['cutoffs']
-        alpha = self.config['alpha']
-        results_dir = Path(self.config['results_dir'])
-        
-        all_results = {}
-        
-        # Auto-detect models
-        exclude_dirs = {
-            'context_consistency', 'context_metrics', 'context_satisfaction',
-            'context_similarity', 'context_weighted_ranking', 
-            'context_weighted_metrics', 'evaluation', '__pycache__'
-        }
-        
-        model_dirs = [
-            d for d in results_dir.iterdir()
-            if d.is_dir() and d.name not in exclude_dirs and not d.name.startswith('.')
-        ]
-        
-        print(f"Found {len(model_dirs)} model directories")
-        print()
-        
-        for model_dir in sorted(model_dirs):
-            model_name = self._extract_model_name(model_dir.name)
-            pred_file = self._find_predictions_file(model_dir, model_name)
-            
-            if not pred_file:
-                print(f"⚠ Skipping {model_name}: no predictions")
-                print()
-                continue
-            
-            print(f"✓ Found: {pred_file.relative_to(results_dir)}")
-            
-            results = self.evaluate_model(model_name, pred_file, cutoffs, alpha)
-            
-            if results:
-                all_results[model_name] = results
-            
-            print()
-        
-        self.results = all_results
-    
-    def _find_predictions_file(self, model_dir, model_name):
-        """Find predictions file"""
-        candidates = [
-            model_dir / 'result' / f"{model_name}_final_predictions.tsv",
-            model_dir / 'result' / f"{model_dir.name}_final_predictions.tsv",
-        ]
-        
-        for candidate in candidates:
-            if candidate.exists():
-                return candidate
-        
-        if (model_dir / 'result').exists():
-            pred_files = list((model_dir / 'result').glob('*predictions.tsv'))
-            if pred_files:
-                return pred_files[0]
-        
-        return None
-    
-    def _extract_model_name(self, dirname):
-        """Extract model name"""
-        name = dirname.split('_f0')[0].split('_seed')[0]
-        
-        if name.lower() in ['random', 'pop', 'popularity']:
-            return name.capitalize()
-        
-        if name.upper() == name and len(name) <= 5:
-            return name.upper()
-        
-        return name.capitalize() if name else dirname
-    
-    # =========================================================================
-    # REPORTING
-    # =========================================================================
-    
+        for md in sorted(model_dirs):
+            p_file = next(md.rglob('*predictions.tsv'), None)
+            if p_file: 
+                self.results[md.name.capitalize()] = self.evaluate_model(md.name, p_file)
+
     def save_results(self):
-        """Save results with analysis"""
-        print("="*70)
-        print("SAVING RESULTS")
-        print("="*70)
-        
-        if not self.results:
-            print("✗ No results to save")
-            return None
-        
-        results_df = pd.DataFrame(self.results).T
-        results_df = results_df.round(4)
-        
-        # Organize columns
-        cutoffs = self.config['cutoffs']
-        
-        ordered_cols = []
-        
-        # Similarity metrics
-        for sim in ['CS', 'WCA', 'Friction']:
-            ordered_cols.append(f'{sim}@all')
-            for k in cutoffs:
-                col = f'{sim}@{k}'
-                if col in results_df.columns:
-                    ordered_cols.append(col)
-        
-        # Ranking metrics
-        for sim in ['CS', 'WCA', 'Friction']:
-            for k in cutoffs:
-                ndcg_col = f'{sim}_CW-nDCG@{k}'
-                map_col = f'{sim}_CW-MAP@{k}'
-                if ndcg_col in results_df.columns:
-                    ordered_cols.append(ndcg_col)
-                if map_col in results_df.columns:
-                    ordered_cols.append(map_col)
-        
-        results_df = results_df[ordered_cols]
-        results_df = results_df.sort_index()
-        
-        # Save CSV
-        csv_path = self.output_dir / f"bgg_context_metrics_{self.timestamp}.csv"
-        results_df.to_csv(csv_path)
-        
-        print(f"Results saved to: {csv_path}")
-        print()
-        print(results_df.to_string())
-        print()
-        
-        # Best models
-        print("="*70)
-        print("BEST MODELS BY METRIC")
-        print("="*70)
-        
-        print("\nSimilarity Metrics:")
-        for sim in ['CS', 'WCA', 'Friction']:
-            print(f"\n  {sim}:")
-            for k in ['all'] + cutoffs:
-                col = f'{sim}@{k}'
-                if col in results_df.columns:
-                    best_model = results_df[col].idxmax()
-                    best_value = results_df[col].max()
-                    print(f"    @{k}: {best_model} ({best_value:.4f})")
-        
-        print("\n\nRanking Metrics:")
-        for sim in ['CS', 'WCA', 'Friction']:
-            print(f"\n  {sim}-weighted:")
-            for k in cutoffs:
-                ndcg_col = f'{sim}_CW-nDCG@{k}'
-                map_col = f'{sim}_CW-MAP@{k}'
-                if ndcg_col in results_df.columns:
-                    best_model = results_df[ndcg_col].idxmax()
-                    best_value = results_df[ndcg_col].max()
-                    print(f"    CW-nDCG@{k}: {best_model} ({best_value:.4f})")
-                if map_col in results_df.columns:
-                    best_model = results_df[map_col].idxmax()
-                    best_value = results_df[map_col].max()
-                    print(f"    CW-MAP@{k}: {best_model} ({best_value:.4f})")
-        
-        return results_df
-    
-    def create_visualizations(self, results_df):
-        """Create comparison plots"""
-        print("\n" + "="*70)
-        print("GENERATING VISUALIZATIONS")
-        print("="*70)
-        
-        if results_df is None or results_df.empty:
-            print("✗ No data to visualize")
+        if not self.results: 
+            print("✗ No results")
             return
         
-        cutoffs = self.config['cutoffs']
+        df = pd.DataFrame(self.results).T.round(4)
         
-        # Figure 1: Similarity Metrics
-        fig1, axes1 = plt.subplots(1, 3, figsize=(20, 6))
-        fig1.suptitle('Context Similarity Metrics', fontsize=16, fontweight='bold')
+        # Column order
+        col_order = []
         
-        for idx, sim in enumerate(['CS', 'WCA', 'Friction']):
-            ax = axes1[idx]
-            cols = [f'{sim}@{k}' for k in cutoffs if f'{sim}@{k}' in results_df.columns]
-            if cols:
-                results_df[cols].plot(kind='bar', ax=ax, rot=45)
-                ax.set_title(f'{sim}', fontweight='bold')
-                ax.set_ylabel('Score')
-                ax.legend(title='Cutoff')
-                ax.grid(axis='y', alpha=0.3)
-                ax.set_ylim([0, 1.05])
+        # Traditional
+        for m in ['AUC', 'LogLoss', 'nDCG@5', 'nDCG@10', 'MAP@10', 'MRR@10', 'P@5', 'R@10']:
+            if m in df.columns:
+                col_order.append(m)
         
-        plt.tight_layout()
-        plot1_path = self.output_dir / f"similarity_metrics_{self.timestamp}.png"
-        plt.savefig(plot1_path, dpi=300, bbox_inches='tight')
-        print(f"Similarity plots saved to: {plot1_path}")
-        plt.close()
+        # Context similarity
+        for m in ['ACC@5', 'CS@5', 'WCS@5', 'WCA@5', 'Friction@5']:
+            if m in df.columns:
+                col_order.append(m)
         
-        # Figure 2: Ranking Metrics
-        fig2, axes2 = plt.subplots(2, 3, figsize=(20, 12))
-        fig2.suptitle('Context-Weighted Ranking Metrics', fontsize=16, fontweight='bold')
+        # Advanced
+        for m in ['CR@5', 'CRC@5', 'CGB@5']:
+            if m in df.columns:
+                col_order.append(m)
         
-        # CW-nDCG row
-        for idx, sim in enumerate(['CS', 'WCA', 'Friction']):
-            ax = axes2[0, idx]
-            cols = [f'{sim}_CW-nDCG@{k}' for k in cutoffs if f'{sim}_CW-nDCG@{k}' in results_df.columns]
-            if cols:
-                results_df[cols].plot(kind='bar', ax=ax, rot=45)
-                ax.set_title(f'{sim}-weighted nDCG', fontweight='bold')
-                ax.set_ylabel('Score')
-                ax.legend(title='Cutoff')
-                ax.grid(axis='y', alpha=0.3)
-                ax.set_ylim([0, 1.05])
+        # CW Ranking
+        for k in [5, 10, 20]:
+            for m in [f'CW-nDCG@{k}', f'CW-MAP@{k}']:
+                if m in df.columns:
+                    col_order.append(m)
         
-        # CW-MAP row
-        for idx, sim in enumerate(['CS', 'WCA', 'Friction']):
-            ax = axes2[1, idx]
-            cols = [f'{sim}_CW-MAP@{k}' for k in cutoffs if f'{sim}_CW-MAP@{k}' in results_df.columns]
-            if cols:
-                results_df[cols].plot(kind='bar', ax=ax, rot=45)
-                ax.set_title(f'{sim}-weighted MAP', fontweight='bold')
-                ax.set_ylabel('Score')
-                ax.legend(title='Cutoff')
-                ax.grid(axis='y', alpha=0.3)
-                ax.set_ylim([0, 1.05])
+        # Dimensional
+        for group in ['temporal', 'experiential', 'social']:
+            col = f'WCS_{group}@5'
+            if col in df.columns:
+                col_order.append(m)
         
-        plt.tight_layout()
-        plot2_path = self.output_dir / f"ranking_metrics_{self.timestamp}.png"
-        plt.savefig(plot2_path, dpi=300, bbox_inches='tight')
-        print(f"Ranking plots saved to: {plot2_path}")
-        plt.close()
-    
-    # =========================================================================
-    # MAIN EXECUTION
-    # =========================================================================
-    
+        df = df[[c for c in col_order if c in df.columns]]
+        
+        path = self.output_dir / f"bgg_all_metrics_{self.timestamp}.csv"
+        df.to_csv(path)
+        print(f"\n✓ Saved: {path}\n{df.to_string()}")
+
     def run(self):
-        """Execute evaluation pipeline"""
-        print("\n" + "="*70)
-        print("BGG CONTEXT-AWARE EVALUATOR")
-        print("="*70)
-        print(f"Timestamp: {self.timestamp}")
-        print(f"Cutoffs: {self.config['cutoffs']}")
-        print(f"Alpha (CS penalty): {self.config['alpha']}")
-        print(f"Relevance threshold: {self.config.get('relevance_threshold', 7.0)}")
-        print()
-        
         try:
             self.load_test_set()
             self.load_context_info()
             self.evaluate_all_models()
-            results_df = self.save_results()
-            
-            if results_df is not None:
-                self.create_visualizations(results_df)
-            
+            self.save_results()
             print("\n" + "="*70)
-            print("✓ EVALUATION COMPLETED")
+            print("✓ COMPLETED")
             print("="*70)
-            print(f"\nResults: {self.output_dir}")
-            
             return True
-            
         except Exception as e:
-            print(f"\n✗ Failed: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            print(f"\n✗ Failed: {e}")
+            import traceback; traceback.print_exc()
             return False
-
-
-# =============================================================================
-# STANDALONE EXECUTION
-# =============================================================================
 
 if __name__ == '__main__':
     config = {
         'test_path': './datasets/bgg/test_df.tsv',
         'context_info_path': './datasets/bgg/context_info.tsv',
-        'results_dir': './outputs',
-        'output_dir': './results/bgg/context_metrics',
-        'cutoffs': [5, 10, 20],
-        'alpha': 0.5,
-        'relevance_threshold': 7.0,
+        'results_dir': './outputs/bgg',
+        'output_dir': './results/bgg/complete_metrics'
     }
-    
-    evaluator = BGGEvaluator(config)
-    success = evaluator.run()
-    
-    import sys
-    sys.exit(0 if success else 1)
+    CompleteBGGEvaluator(config).run()

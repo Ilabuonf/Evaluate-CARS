@@ -6,3 +6,7 @@ outputs/
 # Ignora i file di sistema
 __pycache__/
 .DS_Store
+log/
+log_tensorboard/
+.ipynb_checkpoints/
+results/

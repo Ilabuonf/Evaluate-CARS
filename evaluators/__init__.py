@@ -2,18 +2,15 @@
 Evaluators Package
 ==================
 
-Consolidated evaluators for context-aware recommendation systems.
-Each evaluator handles a complete dataset evaluation pipeline.
+Complete evaluators for all datasets with ALL metrics.
 """
 
-from .evaluate_bgg import BGGEvaluator
-from .evaluate_frappe import FrappeEvaluator
-from .evaluate_yelp import YelpEvaluator
+from .evaluate_bgg import CompleteBGGEvaluator
+from .evaluate_frappe import CompleteFrappeEvaluator
+from .evaluate_yelp import CompleteYelpEvaluator
 
 __all__ = [
-    'BGGEvaluator',
-    'FrappeEvaluator', 
-    'YelpEvaluator'
+    'CompleteBGGEvaluator',
+    'CompleteFrappeEvaluator',
+    'CompleteYelpEvaluator'
 ]
-
-__version__ = '1.0.0'

@@ -17,6 +17,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
 from abc import ABC, abstractmethod
+from tqdm import tqdm
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -192,6 +193,8 @@ class BasePipeline(ABC):
             'Pop': PopularityModel
         }
         
+        col_names = self._get_column_names()
+        
         for model_name, ModelClass in baseline_classes.items():
             print(f"\n  → Training {model_name}...")
             
@@ -203,7 +206,8 @@ class BasePipeline(ABC):
                 train_df=self.train_df,
                 test_df=self.test_df,
                 config=self.config,
-                context_features=self.CONTEXT_FEATURES
+                context_features=self.CONTEXT_FEATURES,
+                column_names=col_names  # Pass column mapping
             )
             
             baseline.fit()
@@ -308,6 +312,200 @@ class BasePipeline(ABC):
                 'error': str(e)
             }
     
+    # =========================================================================
+    # STEP 4: GENERATE PREDICTIONS
+    # =========================================================================
+    
+    def step4_generate_predictions(self):
+        """Generate predictions for CTR models"""
+        print("\n" + "="*70)
+        print("STEP 4: GENERATING PREDICTIONS")
+        print("="*70)
+        
+        print("\n  Note: Baseline predictions already generated in Step 3")
+        
+        # Generate predictions for each CTR model
+        for model_name in self.config['models'].keys():
+            if model_name in ['Random', 'Pop']:
+                continue  # Skip baselines (already done)
+            
+            self._generate_ctr_predictions(model_name)
+    
+    def _generate_ctr_predictions(self, model_name: str):
+        """Generate predictions for a trained CTR model"""
+        if not RECBOLE_AVAILABLE:
+            print(f"  ⚠ Skipping {model_name}: RecBole not available")
+            return
+        
+        print(f"\n  → Generating predictions for {model_name}...")
+        
+        checkpoint_dir = self.base_output / model_name.lower()
+        checkpoint_files = list(checkpoint_dir.glob('*.pth'))
+        
+        if not checkpoint_files:
+            print(f"    ✗ No checkpoint found in {checkpoint_dir}")
+            return
+        
+        # Get most recent checkpoint
+        checkpoint_file = max(checkpoint_files, key=lambda p: p.stat().st_mtime)
+        print(f"    Using checkpoint: {checkpoint_file.name}")
+        
+        try:
+            # Load trained model
+            config, model, dataset, train_data, valid_data, test_data = load_data_and_model(
+                model_file=str(checkpoint_file)
+            )
+            
+            model.eval()
+            device = torch.device('cuda' if self.use_gpu else 'cpu')
+            model = model.to(device)
+            
+            # Get test user-context pairs
+            col_names = self._get_column_names()
+            test_df = self.test_df.copy()
+            user_contexts = test_df[[col_names['user']] + self.CONTEXT_FEATURES].drop_duplicates()
+            
+            # Get all items
+            all_items = list(dataset.field2id_token['item_id'])
+            num_items = len(all_items)
+            top_k = self.config['evaluation']['top_k']
+            
+            print(f"    Scoring {num_items} items for {len(user_contexts):,} queries...")
+            
+            predictions = []
+            skipped = 0
+            
+            for idx, row in tqdm(user_contexts.iterrows(), total=len(user_contexts),
+                                desc="    Predicting", leave=False):
+                user_orig = str(row[col_names['user']])
+                
+                # Check if user is in dataset
+                if user_orig not in dataset.field2token_id['user_id']:
+                    skipped += 1
+                    continue
+                
+                user_id = dataset.field2token_id['user_id'][user_orig]
+                
+                # Map context features
+                context_ids = {}
+                skip_query = False
+                
+                for feat in self.CONTEXT_FEATURES:
+                    feat_value = str(row[feat])
+                    if feat_value not in dataset.field2token_id.get(feat, {}):
+                        skip_query = True
+                        break
+                    context_ids[feat] = dataset.field2token_id[feat][feat_value]
+                
+                if skip_query:
+                    skipped += 1
+                    continue
+                
+                # Create interaction batch for all items
+                interaction_dict = {
+                    'user_id': torch.full((num_items,), user_id, dtype=torch.long),
+                    'item_id': torch.arange(num_items, dtype=torch.long)
+                }
+                
+                # Add context features
+                for feat in self.CONTEXT_FEATURES:
+                    interaction_dict[feat] = torch.full(
+                        (num_items,), context_ids[feat], dtype=torch.long
+                    )
+                
+                interaction = Interaction(interaction_dict).to(device)
+                
+                # Get predictions
+                with torch.no_grad():
+                    scores = model.predict(interaction)
+                    
+                    if isinstance(scores, torch.Tensor):
+                        scores = scores.cpu().numpy()
+                    
+                    # Ensure 1D array
+                    if len(scores.shape) > 1:
+                        scores = scores.squeeze()
+                    
+                    # Safety check
+                    if len(scores) != num_items:
+                        if len(scores) > num_items:
+                            scores = scores[:num_items]
+                        else:
+                            scores = np.pad(scores, (0, num_items - len(scores)),
+                                          constant_values=-np.inf)
+                
+                # Get top-K items
+                top_indices = np.argsort(-scores)[:top_k]
+                
+                # Create q_context_id
+                q_context_id = '_'.join([str(row[f]) for f in self.CONTEXT_FEATURES])
+                
+                # Store predictions
+                for rank, item_idx in enumerate(top_indices):
+                    if item_idx >= num_items:
+                        continue
+                    
+                    predictions.append({
+                        'user_id:token': user_orig,
+                        'item_id:token': str(all_items[item_idx]),
+                        'q_context_id': q_context_id,
+                        'prediction': float(scores[item_idx]),
+                        'rank': rank + 1
+                    })
+            
+            if skipped > 0:
+                print(f"    ⚠ Skipped {skipped} queries (not in vocab)")
+            
+            # Convert to DataFrame
+            pred_df = pd.DataFrame(predictions)
+            
+            # Add item context information
+            item_context = self._get_item_context_info()
+            
+            pred_df['item_id:token'] = pred_df['item_id:token'].astype(str).str.strip()
+            item_context['item_id:token'] = item_context['item_id:token'].astype(str).str.strip()
+            
+            final_df = pred_df.merge(item_context, on='item_id:token', how='left')
+            
+            # Reorder columns
+            cols = ['user_id:token', 'item_id:token', 'q_context_id',
+                   'prediction', 'rank'] + self.CONTEXT_FEATURES
+            final_df = final_df[[c for c in cols if c in final_df.columns]]
+            
+            # Save predictions
+            output_dir = checkpoint_dir / 'result'
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / f'{model_name}_final_predictions.tsv'
+            final_df.to_csv(output_path, sep='\t', index=False)
+            
+            print(f"    ✓ {len(final_df):,} predictions saved to:")
+            print(f"      {output_path}")
+            
+        except Exception as e:
+            print(f"    ✗ Failed: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _get_item_context_info(self) -> pd.DataFrame:
+        """
+        Get item context information from training data.
+        Uses mode (most common) value for each item-context pair.
+        """
+        col_names = self._get_column_names()
+        
+        item_context = (
+            self.train_df.groupby(col_names['item'])[self.CONTEXT_FEATURES]
+            .agg(lambda x: x.mode()[0] if len(x.mode()) > 0 else x.iloc[0])
+            .reset_index()
+            .rename(columns={col_names['item']: 'item_id:token'})
+        )
+        
+        return item_context
+    
+    # =========================================================================
+    # MAIN EXECUTION
+    # =========================================================================
+    
     def run(self) -> bool:
         """Execute complete pipeline"""
         print("\n" + "="*70)
@@ -320,10 +518,14 @@ class BasePipeline(ABC):
             self.step1_load_data()
             self.step2_prepare_recbole_data()
             self.step3_train_models()
+            self.step4_generate_predictions()
             
             print("\n" + "="*70)
             print("✓ PIPELINE COMPLETED!")
             print("="*70)
+            print(f"\nOutputs saved to: {self.base_output}")
+            print("\nNext step: Run evaluation")
+            print(f"  python -m evaluators.evaluate_{self.config['dataset']['name'].lower()}")
             
             return True
             

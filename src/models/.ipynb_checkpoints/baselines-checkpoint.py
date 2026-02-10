@@ -20,7 +20,7 @@ class BaselineModel:
     """Base class for baseline models"""
     
     def __init__(self, name: str, train_df: pd.DataFrame, test_df: pd.DataFrame,
-                 config: Dict, context_features: List[str]):
+                 config: Dict, context_features: List[str], column_names: Dict[str, str]):
         """
         Args:
             name: Model name
@@ -28,12 +28,15 @@ class BaselineModel:
             test_df: Test data
             config: Configuration dictionary
             context_features: List of context feature names
+            column_names: Dict mapping generic names to dataset columns
+                Example: {'user': 'user_id:token', 'item': 'game_id:token', 'label': 'label'}
         """
         self.name = name
         self.train_df = train_df
         self.test_df = test_df
         self.config = config
         self.context_features = context_features
+        self.column_names = column_names
         self.all_items = None
         self.predictions = []
         
@@ -92,20 +95,12 @@ class BaselineModel:
         return output_path
     
     def _get_item_column_name(self) -> str:
-        """Get item column name from training data"""
-        possible_names = ['item', 'business_id', 'game_id:token', 'item_id']
-        for name in possible_names:
-            if name in self.train_df.columns:
-                return name
-        raise ValueError(f"Could not find item column in {self.train_df.columns}")
+        """Get item column name from column mapping"""
+        return self.column_names.get('item', 'item_id:token')
     
     def _get_user_column_name(self) -> str:
-        """Get user column name from training data"""
-        possible_names = ['user', 'user_id', 'user_id:token']
-        for name in possible_names:
-            if name in self.train_df.columns:
-                return name
-        raise ValueError(f"Could not find user column in {self.train_df.columns}")
+        """Get user column name from column mapping"""
+        return self.column_names.get('user', 'user_id:token')
 
 
 class RandomModel(BaselineModel):
