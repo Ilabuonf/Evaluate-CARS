@@ -58,12 +58,21 @@ def compute_context_weighted_ndcg(predictions_df: pd.DataFrame,
     pred_df = predictions_df.copy()
     ctx_df = context_info.copy()
     
-    # Extract query context
-    context_splits = pred_df['q_context_id'].str.split('_', expand=True)
+    # Extract query context from actual feature columns if available
+    # Otherwise fall back to parsing q_context_id
+    query_context_available = all(feat in pred_df.columns for feat in context_features)
     
-    for i, feat in enumerate(context_features):
-        if i < context_splits.shape[1]:
-            pred_df[f'{feat}_query'] = context_splits[i].astype(str).str.strip()
+    if not query_context_available:
+        # Parse q_context_id to extract query context
+        context_splits = pred_df['q_context_id'].str.split('_', expand=True)
+        
+        for i, feat in enumerate(context_features):
+            if i < context_splits.shape[1]:
+                pred_df[f'{feat}_query'] = context_splits[i].astype(str).str.strip()
+    else:
+        # Use actual context feature columns
+        for feat in context_features:
+            pred_df[f'{feat}_query'] = pred_df[feat].astype(str).str.strip()
     
     # Prepare item contexts
     ctx_df['item_id:token'] = ctx_df['item_id:token'].astype(str).str.strip()
@@ -180,11 +189,20 @@ def compute_context_weighted_map(predictions_df: pd.DataFrame,
     pred_df = predictions_df.copy()
     ctx_df = context_info.copy()
     
-    context_splits = pred_df['q_context_id'].str.split('_', expand=True)
+    # Extract query context from actual feature columns if available
+    query_context_available = all(feat in pred_df.columns for feat in context_features)
     
-    for i, feat in enumerate(context_features):
-        if i < context_splits.shape[1]:
-            pred_df[f'{feat}_query'] = context_splits[i].astype(str).str.strip()
+    if not query_context_available:
+        # Parse q_context_id
+        context_splits = pred_df['q_context_id'].str.split('_', expand=True)
+        
+        for i, feat in enumerate(context_features):
+            if i < context_splits.shape[1]:
+                pred_df[f'{feat}_query'] = context_splits[i].astype(str).str.strip()
+    else:
+        # Use actual context columns
+        for feat in context_features:
+            pred_df[f'{feat}_query'] = pred_df[feat].astype(str).str.strip()
     
     ctx_df['item_id:token'] = ctx_df['item_id:token'].astype(str).str.strip()
     pred_df['item_id:token'] = pred_df['item_id:token'].astype(str).str.strip()

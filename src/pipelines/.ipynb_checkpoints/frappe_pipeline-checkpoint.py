@@ -28,12 +28,14 @@ class FrappePipeline(BasePipeline):
     """Frappe-specific pipeline implementation"""
     
     # Frappe context features
-    CONTEXT_FEATURES = [
-        'daytime', 'weekday', 'isweekend',
-        'homework', 'cost',
-        'weather', 'country', 'city'
+    COLUMN_NAMES = [
+        'label', 'user', 'item', 'daytime', 'weekday', 'isweekend',
+        'homework', 'cost', 'weather', 'country', 'city'
     ]
     
+    CONTEXT_FEATURES = COLUMN_NAMES[3:]
+    
+    #Context Groups: Temporal (daytime, weekday, weekend), Activity (homework, cost), Environment (weather, country, city).
     # Feature groups
     FEATURE_GROUPS = {
         'temporal': ['daytime', 'weekday', 'isweekend'],

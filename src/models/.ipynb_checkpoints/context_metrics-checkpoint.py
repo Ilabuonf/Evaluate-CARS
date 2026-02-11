@@ -70,7 +70,7 @@ class ContextMetrics:
     def _prepare_merge_dataframes(self, predictions_df: pd.DataFrame, 
                                   context_info: pd.DataFrame) -> pd.DataFrame:
         """
-        CRITICAL: Does ALL the merging. Returns complete DataFrame.
+        Does ALL the merging. Returns complete DataFrame.
         
         This method:
         1. Extracts query context from q_context_id

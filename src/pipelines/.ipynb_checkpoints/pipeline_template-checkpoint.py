@@ -32,7 +32,7 @@ try:
     RECBOLE_AVAILABLE = True
 except ImportError:
     RECBOLE_AVAILABLE = False
-    print("⚠ RecBole not available")
+    print(" RecBole not available")
 
 # Ranx for evaluation
 try:
@@ -304,7 +304,7 @@ class BasePipeline(ABC):
             print(f"    Validation AUC: {self.results[model_name]['train_auc']:.4f}")
             
         except Exception as e:
-            print(f"\n  ✗ Training failed: {e}")
+            print(f"\n  Training failed: {e}")
             self.results[model_name] = {
                 'train_auc': np.nan,
                 'train_logloss': np.nan,
@@ -334,16 +334,16 @@ class BasePipeline(ABC):
     def _generate_ctr_predictions(self, model_name: str):
         """Generate predictions for a trained CTR model"""
         if not RECBOLE_AVAILABLE:
-            print(f"  ⚠ Skipping {model_name}: RecBole not available")
+            print(f"  Skipping {model_name}: RecBole not available")
             return
         
-        print(f"\n  → Generating predictions for {model_name}...")
+        print(f"\n  Generating predictions for {model_name}...")
         
         checkpoint_dir = self.base_output / model_name.lower()
         checkpoint_files = list(checkpoint_dir.glob('*.pth'))
         
         if not checkpoint_files:
-            print(f"    ✗ No checkpoint found in {checkpoint_dir}")
+            print(f"    No checkpoint found in {checkpoint_dir}")
             return
         
         # Get most recent checkpoint
@@ -454,7 +454,7 @@ class BasePipeline(ABC):
                     })
             
             if skipped > 0:
-                print(f"    ⚠ Skipped {skipped} queries (not in vocab)")
+                print(f"   Skipped {skipped} queries (not in vocab)")
             
             # Convert to DataFrame
             pred_df = pd.DataFrame(predictions)
@@ -482,7 +482,7 @@ class BasePipeline(ABC):
             print(f"      {output_path}")
             
         except Exception as e:
-            print(f"    ✗ Failed: {e}")
+            print(f"    Failed: {e}")
             import traceback
             traceback.print_exc()
     
@@ -531,7 +531,7 @@ class BasePipeline(ABC):
             
         except Exception as e:
             print(f"\n{'='*70}")
-            print("✗ PIPELINE FAILED")
+            print(" PIPELINE FAILED")
             print('='*70)
             print(f"Error: {e}")
             import traceback

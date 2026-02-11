@@ -74,7 +74,7 @@ class MasterEvaluator:
     def run_single_dataset(self, dataset_key: str) -> bool:
         """Run evaluation for single dataset"""
         if dataset_key not in self.DATASETS:
-            print(f"✗ Unknown dataset: {dataset_key}")
+            print(f"Unknown dataset: {dataset_key}")
             return False
         
         dataset_info = self.DATASETS[dataset_key]
@@ -192,11 +192,11 @@ class MasterEvaluator:
         print(f"\nResults: {successful}/{total} datasets evaluated successfully")
         
         if successful == total:
-            print("\n🎉 ALL EVALUATIONS COMPLETED SUCCESSFULLY!")
+            print("\n ALL EVALUATIONS COMPLETED SUCCESSFULLY!")
         elif successful > 0:
-            print(f"\n⚠ {total - successful} dataset(s) failed")
+            print(f"\n {total - successful} dataset(s) failed")
         else:
-            print("\n✗ ALL EVALUATIONS FAILED")
+            print("\n ALL EVALUATIONS FAILED")
         
         print()
 

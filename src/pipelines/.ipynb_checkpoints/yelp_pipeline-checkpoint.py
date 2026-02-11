@@ -29,13 +29,16 @@ class YelpPipeline(BasePipeline):
     
     # Yelp context features
     CONTEXT_FEATURES = [
-        'hour_of_day', 'day_of_week', 'is_weekend', 
-        'city', 'category', 'price_range'
+        'hour_of_day', 'day_of_week', 'is_weekend',      
+        'user_elite', 'review_length', 'user_experience', 
+        'city', 'category', 'price_range',               
+        'alcohol', 'outdoor_seating'                     
     ]
-    
+
     # Feature groups
     FEATURE_GROUPS = {
         'temporal': ['hour_of_day', 'day_of_week', 'is_weekend'],
+        'social': ['user_elite', 'review_length', 'user_experience', 'alcohol', 'outdoor_seating'],
         'business_info': ['city', 'category', 'price_range']
     }
     

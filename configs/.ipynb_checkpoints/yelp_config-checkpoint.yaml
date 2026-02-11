@@ -93,6 +93,9 @@ context:
     social:
       - review_length
       - user_elite
+      - user_experience
+      - alcohol
+      - outdoor_seating
     spatial:
       - city
       - category
@@ -102,18 +105,3 @@ context:
   metrics:
     alpha: 0.5                   # Penalty parameter for CS/WCS
     k_values: [5, 10, 20]        # K values for @K metrics
-
-# Expected data format
-# Files: yelp_train.csv, yelp_valid.csv, yelp_test.csv
-# Columns:
-#   - user_id: User ID (string)
-#   - business_id: Business ID (string)
-#   - stars: Rating (1-5)
-#   - hour_of_day: Hour (0-23)
-#   - day_of_week: Day (0-6, Monday=0)
-#   - is_weekend: Weekend flag (0/1)
-#   - review_length: Review length category (0-2)
-#   - user_elite: Elite user flag (0/1)
-#   - city: City name (string)
-#   - category: Business category (string)
-#   - price_range: Price range (1-4, can have NaN)

@@ -13,12 +13,7 @@ load_col:
   - hour_of_day
   - day_of_week
   - is_weekend
-  - user_elite
-  - review_length
-  - user_experience
   - city
   - category
   - price_range
-  - alcohol
-  - outdoor_seating
 user_inter_num_interval: '[0,inf)'

@@ -51,13 +51,6 @@ def compute_acc(predictions_df: pd.DataFrame,
     Returns:
         Dict with keys like 'ACC@5', 'ACC@10'
     
-    Example:
-        >>> predictions = pd.read_csv('predictions.tsv', sep='\\t')
-        >>> contexts = pd.read_csv('context_info.tsv', sep='\\t')
-        >>> features = ['playing_time', 'gaming_mood', 'social_companion']
-        >>> results = compute_acc(predictions, contexts, features, [5, 10])
-        >>> print(results)
-        {'ACC@5': 0.0823, 'ACC@10': 0.0756}
     """
     results = {}
     

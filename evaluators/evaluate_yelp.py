@@ -1,4 +1,3 @@
-"""Complete Yelp Evaluator with CW Metrics"""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -11,18 +10,13 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from src.metrics import (
-    compute_acc,
-    compute_cs_wcs,
-    compute_similarity_metrics,
-    compute_context_recall,
-    compute_context_ranking_correlation,
+    compute_acc, compute_cs_wcs, compute_similarity_metrics,
+    compute_context_recall, compute_context_ranking_correlation,
     compute_context_group_balance
 )
 
-# CW Metrics
 from src.metrics.weighted_ranking import (
-    compute_context_weighted_ndcg,
-    compute_context_weighted_map
+    compute_context_weighted_ndcg, compute_context_weighted_map
 )
 
 try:
@@ -38,10 +32,18 @@ except ImportError:
     SKLEARN_AVAILABLE = False
 
 class CompleteYelpEvaluator:
-    CONTEXT_FEATURES = ['hour_of_day', 'day_of_week', 'is_weekend', 'city', 'category', 'price_range']
+    CONTEXT_FEATURES = [
+        'hour_of_day', 'day_of_week', 'is_weekend',      
+        'user_elite', 'review_length', 'user_experience', 
+        'city', 'category', 'price_range',               
+        'alcohol', 'outdoor_seating'                     
+    ]
+
+    # Feature groups
     FEATURE_GROUPS = {
         'temporal': ['hour_of_day', 'day_of_week', 'is_weekend'],
-        'business': ['city', 'category', 'price_range']
+        'social': ['user_elite', 'review_length', 'user_experience', 'alcohol', 'outdoor_seating'],
+        'business_info': ['city', 'category', 'price_range']
     }
     
     def __init__(self, config: Dict):
@@ -69,17 +71,25 @@ class CompleteYelpEvaluator:
         
         for col in ['user_id:token', 'item_id:token']:
             self.test_df[col] = self.test_df[col].astype(str).str.strip()
+        
+        # Convert context features to string
+        for feat in self.CONTEXT_FEATURES:
+            if feat in self.test_df.columns:
+                self.test_df[feat] = self.test_df[feat].astype(str).str.strip()
             
         ctx_str = self.test_df[self.CONTEXT_FEATURES].astype(str).apply('_'.join, axis=1)
         self.test_df['query_id'] = self.test_df['user_id:token'] + '_' + ctx_str
         
-        self.ground_truth = {}
-        for _, row in self.test_df.iterrows():
-            qid, item, rel = row['query_id'], row['item_id:token'], row['rating']
-            if qid not in self.ground_truth: self.ground_truth[qid] = {}
-            self.ground_truth[qid][item] = 1.0 if rel >= self.config.get('stars_threshold', 4.0) else 0.0
+        threshold = self.config.get('stars_threshold', 4.0)
+        
+        # VECTORIZED ground truth
+        self.ground_truth = (
+            self.test_df.groupby('query_id')
+            .apply(lambda g: dict(zip(g['item_id:token'], (g['rating'] >= threshold).astype(float))))
+            .to_dict()
+        )
             
-        print(f"✓ Loaded: {self.test_df.shape}\n  Queries: {len(self.ground_truth):,}\n")
+        print(f"✓ Loaded: {self.test_df.shape}, Queries: {len(self.ground_truth):,}\n")
 
     def load_context_info(self):
         print("Loading context information...")
@@ -91,6 +101,11 @@ class CompleteYelpEvaluator:
         
         if 'price_range' in train_df.columns:
             train_df['price_range'] = train_df['price_range'].fillna('2')
+        
+        # Convert to string
+        for feat in self.CONTEXT_FEATURES:
+            if feat in train_df.columns:
+                train_df[feat] = train_df[feat].astype(str).str.strip()
 
         self.context_info = train_df.groupby('item_id:token')[self.CONTEXT_FEATURES].agg(
             lambda x: x.mode()[0] if not x.mode().empty else x.iloc[0]
@@ -108,11 +123,9 @@ class CompleteYelpEvaluator:
             
         results = {}
         
-        # Traditional
         print(f"      Traditional...")
         results.update(self._evaluate_traditional(pred_df))
         
-        # Context metrics
         print(f"      Context metrics...")
         k_val = [5]
         try:
@@ -125,26 +138,30 @@ class CompleteYelpEvaluator:
         except Exception as e:
             print(f"        Error: {e}")
         
-        # CW Ranking Metrics
         print(f"      CW-nDCG, CW-MAP...")
         try:
+            # VECTORIZED label assignment
             cw_pred = pred_df.copy()
             cw_pred['query_id'] = cw_pred['user_id:token'] + '_' + cw_pred['q_context_id']
-            labels = []
-            for _, row in cw_pred.iterrows():
-                qid, item = row['query_id'], row['item_id:token']
-                labels.append(self.ground_truth.get(qid, {}).get(item, 0.0))
-            cw_pred['label'] = labels
             
-            cw_ndcg = compute_context_weighted_ndcg(cw_pred, self.context_info, self.CONTEXT_FEATURES, k_values=[5, 10, 20])
-            results.update(cw_ndcg)
+            gt_list = [
+                {'query_id': qid, 'item_id:token': item, 'label': label}
+                for qid, items in self.ground_truth.items()
+                for item, label in items.items()
+            ]
             
-            cw_map = compute_context_weighted_map(cw_pred, self.context_info, self.CONTEXT_FEATURES, k_values=[5, 10, 20])
-            results.update(cw_map)
+            if gt_list:
+                gt_df = pd.DataFrame(gt_list)
+                cw_pred = cw_pred.merge(gt_df, on=['query_id', 'item_id:token'], how='left')
+                cw_pred['label'] = cw_pred['label'].fillna(0).astype(float)
+            else:
+                cw_pred['label'] = 0.0
+            
+            results.update(compute_context_weighted_ndcg(cw_pred, self.context_info, self.CONTEXT_FEATURES, k_values=[5, 10, 20]))
+            results.update(compute_context_weighted_map(cw_pred, self.context_info, self.CONTEXT_FEATURES, k_values=[5, 10, 20]))
         except Exception as e:
-            print(f"        CW metrics error: {e}")
+            print(f"        CW error: {e}")
         
-        # Dimensional
         print(f"      Dimensional...")
         for g_name, g_feats in self.FEATURE_GROUPS.items():
             try:
@@ -152,7 +169,7 @@ class CompleteYelpEvaluator:
                 if 'WCS@5' in w_res: results[f'WCS_{g_name}@5'] = w_res['WCS@5']
             except: pass
 
-        print(f"      ✓ Completed")
+        print(f"      ✓ Done")
         return results
 
     def _evaluate_traditional(self, pred_df):
@@ -175,8 +192,12 @@ class CompleteYelpEvaluator:
         if RANX_AVAILABLE:
             pred_df['query_id'] = pred_df['user_id:token'] + '_' + pred_df['q_context_id']
             qrels = Qrels(self.ground_truth)
-            run_dict = {qid: dict(zip(g['item_id:token'], g['prediction'])) for qid, g in pred_df.groupby('query_id')}
+            # VECTORIZED run dict
+            run_dict = pred_df.groupby('query_id').apply(
+                lambda g: dict(zip(g['item_id:token'], g['prediction']))
+            ).to_dict()
             run = Run(run_dict)
+            
             try:
                 ranx_res = evaluate(qrels, run, ['ndcg@5', 'ndcg@10', 'map@10', 'mrr@10', 'precision@5', 'recall@10'], make_comparable=True)
                 res['nDCG@5'], res['nDCG@10'], res['MAP@10'] = ranx_res.get('ndcg@5', np.nan), ranx_res.get('ndcg@10', np.nan), ranx_res.get('map@10', np.nan)
