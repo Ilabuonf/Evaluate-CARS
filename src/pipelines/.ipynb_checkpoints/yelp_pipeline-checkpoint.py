@@ -78,6 +78,42 @@ class YelpPipeline(BasePipeline):
         )
         print(f"✓ Yelp context aligned with columns: {available_context}")
 
+    def print_dataset_summary(self):
+        """Calcola e stampa le statistiche del dataset Yelp a terminale"""
+        # Uniamo i dataframe per avere le statistiche globali
+        full_df = pd.concat([self.train_df, self.valid_df, self.test_df])
+        
+        print("\n" + "="*50)
+        print("      YELP DATASET STATISTICS (SUMMARY)")
+        print("="*50)
+        
+        # Statistiche Generali
+        stats = [
+            ("Total interactions", len(full_df)),
+            ("Training set size", f"{len(self.train_df)} ({len(self.train_df)/len(full_df)*100:.1f}%)"),
+            ("Validation set size", f"{len(self.valid_df)} ({len(self.valid_df)/len(full_df)*100:.1f}%)"),
+            ("Test set size", f"{len(self.test_df)} ({len(self.test_df)/len(full_df)*100:.1f}%)"),
+            ("Unique users", full_df[self._get_column_names()['user']].nunique()),
+            ("Unique businesses", full_df[self._get_column_names()['item']].nunique()),
+            ("Positive ratio (stars >= 4.0)", f"{(full_df['label'] == 1).mean()*100:.2f}%")
+        ]
+
+        for metric, value in stats:
+            print(f"{metric:<30} | {value}")
+            
+        print("-" * 50)
+        print("CONTEXT FEATURES ANALYSIS:")
+        
+        # Analisi cardinalità per gruppo (come nel tuo LaTeX)
+        for group, features in self.FEATURE_GROUPS.items():
+            print(f"\nGroup: {group.upper()}")
+            for f in features:
+                if f in full_df.columns:
+                    unique_count = full_df[f].nunique()
+                    print(f"  - {f:<15}: {unique_count} unique values")
+        
+        print("="*50 + "\n")
+
 
 def main():
     """Main entry point"""
@@ -104,6 +140,9 @@ def main():
     # Run pipeline
     pipeline = YelpPipeline(config)
     success = pipeline.run()
+    
+    pipeline._load_dataset_splits()
+    pipeline.print_dataset_summary()
     
     sys.exit(0 if success else 1)
 
