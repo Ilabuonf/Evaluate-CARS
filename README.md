@@ -96,8 +96,11 @@ cd Evaluate-CARS
 
 ### 1. Install dependencies
 pip install pandas numpy scipy scikit-learn
+
 pip install recbole  # For CTR models
+
 pip install ranx     # For ranking metrics
+
 pip install tqdm matplotlib seaborn  # Optional: progress bars & visualization
 
 ### 2. Data Preparation
@@ -168,11 +171,14 @@ Mobile app usage dataset collected through crowdsourcing.
 Public dataset taken from https://huggingface.co/datasets/reczoo/Frappe_x1
 
 ### 3. Yelp - Local Business Recommendations
-The Yelp Dataset is a comprehensive collection of data related to businesses, reviews, users, tips, and check-ins.
-* **Statistics:** 4,803 Users | 22,233 Businesses | 100k Interactions | 38,855 Unique Contexts (7× Frappe).
-* **Context Groups:** Temporal (hour, day, weekend), Social (review length, elite status), Spatial (614 cities, 56 categories, 4 price ranges).
-  
-Public dataset taken from https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/data
+The Yelp Dataset is a comprehensive collection of data related to businesses, reviews, users, tips, and check-ins, specifically filtered for the restaurant and food domain.
+
+* **Statistics:** 45,651 Users | 16,237 Businesses | 604,498 Interactions | ~150k Unique Contexts.
+* **Context Groups:** * **Temporal:** hour_of_day, day_of_week, is_weekend.
+    * **Social & User:** review_length, user_elite, user_experience, alcohol, outdoor_seating.
+    * **Spatial:** city (637 unique), category (340 unique), price_range.
+
+Public dataset taken from: https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/data
 
 ## Evaluation Metrics
 
