@@ -10,3 +10,6 @@ log/
 log_tensorboard/
 .ipynb_checkpoints/
 results/
+venv_warp_312/
+datasets/yelp_json/
+results/

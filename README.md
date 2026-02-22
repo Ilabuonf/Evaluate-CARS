@@ -174,7 +174,8 @@ Public dataset taken from https://huggingface.co/datasets/reczoo/Frappe_x1
 The Yelp Dataset is a comprehensive collection of data related to businesses, reviews, users, tips, and check-ins, specifically filtered for the restaurant and food domain.
 
 * **Statistics:** 45,651 Users | 16,237 Businesses | 604,498 Interactions | ~150k Unique Contexts.
-* **Context Groups:** * **Temporal:** hour_of_day, day_of_week, is_weekend.
+* **Context Groups:**
+    * **Temporal:** hour_of_day, day_of_week, is_weekend.
     * **Social & User:** review_length, user_elite, user_experience, alcohol, outdoor_seating.
     * **Spatial:** city (637 unique), category (340 unique), price_range.
 

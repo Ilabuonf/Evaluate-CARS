@@ -1,7 +1,6 @@
 """
 Context Satisfaction Metrics (CS@K, WCS@K)
 ===========================================
-Versione ottimizzata con mantenimento della firma originale delle funzioni.
 """
 
 import pandas as pd
@@ -11,13 +10,16 @@ from pathlib import Path
 
 
 def compute_idf_weights(df: pd.DataFrame, context_features: List[str]) -> Dict[str, float]:
-    """Calcola i pesi IDF per le feature di contesto."""
+    """Calculate IDF weights for context features."""
+    # Count unique context rows to determine N
     n_contexts = df.drop_duplicates().shape[0] if not df.empty else 0
     idf_weights = {}
     
     for feat in context_features:
         if feat in df.columns:
+            # Count unique values for this specific feature
             df_f = df[feat].astype(str).nunique()
+            # Standard IDF formula with smoothing
             idf_weights[feat] = np.log((n_contexts + 1) / (df_f + 1)) + 1
         else:
             idf_weights[feat] = 1.0
@@ -27,8 +29,8 @@ def compute_idf_weights(df: pd.DataFrame, context_features: List[str]) -> Dict[s
 def context_satisfaction_score(query_context: pd.Series,
                                item_context: pd.Series,
                                alpha: float = 0.5) -> float:
-    """Calcola il CS score per una singola coppia query-item."""
-    # Filtro valori validi e converto in set
+    """Calculate the CS score for a single query-item pair."""
+    # Filter valid values and convert to sets
     q_set = set(query_context.dropna().astype(str).values)
     i_set = set(item_context.dropna().astype(str).values)
     
@@ -38,6 +40,7 @@ def context_satisfaction_score(query_context: pd.Series,
     union = len(q_set | i_set)
     difference = len(q_set - i_set)
     
+    # Calculate penalty based on missing query features in the item context
     penalty = alpha * (difference / len(q_set))
     return intersection / (union + penalty) if (union + penalty) > 0 else 0.0
 
@@ -47,7 +50,7 @@ def weighted_context_satisfaction_score(query_context: pd.Series,
                                         idf_weights: Dict[str, float],
                                         context_features: List[str],
                                         alpha: float = 0.5) -> float:
-    """Calcola il WCS score usando i pesi IDF."""
+    """Calculate the WCS score using IDF weights."""
     query_features = []
     item_features = []
     matched_features = []
@@ -56,6 +59,7 @@ def weighted_context_satisfaction_score(query_context: pd.Series,
         q_val = str(query_context.get(feat, '')).strip()
         i_val = str(item_context.get(feat, '')).strip()
         
+        # Check if values are valid (not empty or NaN)
         is_q_valid = q_val and q_val.lower() != 'nan'
         is_i_valid = i_val and i_val.lower() != 'nan'
         
@@ -66,17 +70,19 @@ def weighted_context_satisfaction_score(query_context: pd.Series,
             
     if not query_features: return 0.0
     
-    # Calcolo pesi tramite set per gestire unione/differenza correttamente
+    # Use sets to handle union and difference logic correctly
     q_feat_set = set(query_features)
     i_feat_set = set(item_features)
     union_feat_set = q_feat_set | i_feat_set
     missing_feat_set = q_feat_set - i_feat_set
     
+    # Weighted calculations using IDF weights
     w_intersection = sum(idf_weights.get(f, 1.0) for f in matched_features)
     w_union = sum(idf_weights.get(f, 1.0) for f in union_feat_set)
     w_missing = sum(idf_weights.get(f, 1.0) for f in missing_feat_set)
     w_query = sum(idf_weights.get(f, 1.0) for f in q_feat_set)
     
+    # Penalty adjusted by the importance (IDF) of the missing features
     penalty = alpha * (w_missing / w_query)
     return w_intersection / (w_union + penalty) if (w_union + penalty) > 0 else 0.0
 
@@ -87,30 +93,30 @@ def compute_dimensional_wcs(predictions_df: pd.DataFrame,
                            alpha: float = 0.5,
                            k: int = 5) -> Dict[str, float]:
     """Compute WCS separately for each feature group."""
-    # FIX: Inizializza subito il dizionario per evitare "name 'results' is not defined"
+    # Initialize the dictionary immediately to prevent "name 'results' is not defined"
     results = {}
     all_features = list(set([f for group in feature_groups.values() for f in group]))
     
-    # Se le feature non sono nelle colonne (es. modelli baseline), restituisci 0.0
+    # If features are missing from columns (e.g., baseline models), return 0.0
     if not all(feat in predictions_df.columns for feat in all_features):
         return {f'WCS_{group_name}@{k}': 0.0 for group_name in feature_groups}
 
     pred_df = predictions_df.copy()
     ctx_df = context_info.copy()
     
-    # FIX: Conversione forzata a stringa per il merge sicuro
+    # Force conversion to string for safe merging
     pred_df['item_id:token'] = pred_df['item_id:token'].astype(str).str.strip()
     ctx_df['item_id:token'] = ctx_df['item_id:token'].astype(str).str.strip()
     
-    # Mapping item contexts
+    # Map item contexts by adding suffix
     rename_dict = {f: f'{f}_item' for f in all_features if f in ctx_df.columns}
     ctx_df = ctx_df.rename(columns=rename_dict)
     
-    # Merge e Rank
+    # Merge predictions with item context metadata
     merged = pred_df.merge(ctx_df, on='item_id:token', how='left')
     
     if 'rank' not in merged.columns:
-        # Calcolo del rank se mancante
+        # Calculate rank based on prediction scores if column is missing
         merged['rank'] = merged.groupby(['user_id:token', 'q_context_id'])['prediction'].rank(
             ascending=False, method='first'
         )
@@ -120,7 +126,7 @@ def compute_dimensional_wcs(predictions_df: pd.DataFrame,
     for group_name, group_features in feature_groups.items():
         scores = []
         for _, row in top_k.iterrows():
-            # Confronto robusto tra query e item
+            # Perform robust comparison between query context and item context
             matches = sum(1 for f in group_features 
                          if str(row.get(f)).strip() == str(row.get(f'{f}_item')).strip())
             scores.append(matches / len(group_features) if group_features else 0.0)
@@ -135,21 +141,21 @@ def compute_cs_wcs(predictions_df: pd.DataFrame,
                    context_features: List[str],
                    alpha: float = 0.5,
                    k_values: List[int] = [5, 10, 20]) -> Dict[str, float]:
-    """Compute CS@K and WCS@K metrics con fix per tipi e inizializzazione."""
+    """Compute CS@K and WCS@K metrics """
     pred_df = predictions_df.copy()
     ctx_df = context_info.copy()
     
-    # FIX: Forza tipi stringa per il merge
+    # String types for correct merging
     pred_df['item_id:token'] = pred_df['item_id:token'].astype(str).str.strip()
     ctx_df['item_id:token'] = ctx_df['item_id:token'].astype(str).str.strip()
 
-    # Parsing query context da q_context_id
+    # Parse query context features from the q_context_id string
     splits = pred_df['q_context_id'].astype(str).str.split('_', expand=True)
     for i, feat in enumerate(context_features):
         if i < splits.shape[1]:
             pred_df[f'{feat}_query'] = splits[i].str.strip()
 
-    # Preparazione item context
+    # Prepare item context columns
     rename_dict = {f: f'{f}_item' for f in context_features if f in ctx_df.columns}
     ctx_df = ctx_df.rename(columns=rename_dict)
     
@@ -161,6 +167,7 @@ def compute_cs_wcs(predictions_df: pd.DataFrame,
     idf_weights = compute_idf_weights(pred_df, context_features)
     
     def apply_metrics(row):
+        # Create helper Series for current query and item contexts
         q_ctx = pd.Series({f: row.get(f'{f}_query') for f in context_features})
         i_ctx = pd.Series({f: row.get(f'{f}_item') for f in context_features})
         return pd.Series({
@@ -174,6 +181,7 @@ def compute_cs_wcs(predictions_df: pd.DataFrame,
     for k in k_values:
         top_k = merged[merged['rank'] <= k]
         if not top_k.empty:
+            # Average scores per query first, then mean across all queries
             q_avg = top_k.groupby(['user_id:token', 'q_context_id'])[['cs_score', 'wcs_score']].mean()
             results[f'CS@{k}'] = float(q_avg['cs_score'].mean())
             results[f'WCS@{k}'] = float(q_avg['wcs_score'].mean())
@@ -197,6 +205,7 @@ class CSSatisfactionEvaluator:
         self.results = {}
     
     def evaluate_model(self, model_name: str, predictions_path: Path, context_info_path: Path) -> Dict[str, float]:
+        """Evaluate a specific model's output file."""
         pred_df = pd.read_csv(predictions_path, sep='\t')
         ctx_df = pd.read_csv(context_info_path, sep='\t')
         res = compute_cs_wcs(pred_df, ctx_df, self.context_features, self.alpha, self.k_values)
@@ -204,12 +213,14 @@ class CSSatisfactionEvaluator:
         return res
     
     def evaluate_all(self, results_dir: Path, context_info_path: Path) -> pd.DataFrame:
+        """Evaluate all models within a results directory."""
         exclude = {'context_metrics', 'evaluation', '__pycache__'}
         for model_dir in results_dir.iterdir():
             if model_dir.is_dir() and model_dir.name not in exclude:
+                # Search for the tsv prediction file inside the result subfolder
                 preds = list((model_dir / 'result').glob('*predictions.tsv'))
                 if preds:
-                    print(f"Evaluazione in corso: {model_dir.name}...")
+                    print(f"Evaluation in progress: {model_dir.name}...")
                     self.evaluate_model(model_dir.name.capitalize(), preds[0], context_info_path)
         
         return pd.DataFrame(self.results).T.round(4)

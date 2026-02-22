@@ -1,0 +1,182 @@
+#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
+general:
+  experiment_name: "yelp_afm_test"
+  device: "cuda"
+  backend: "polars"
+  time_report: True
+
+dashboard:
+  wandb:
+    enabled: True
+    team: "i-buonfrate-politecnico-di-bari"
+    project: "EvaluateCars"
+    api_key: "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"
+    group: "yelp_experiments"
+    log_config: True
+    upload_checkpoints: False
+  codecarbon:
+    enabled: True
+    save_to_file: True
+    output_dir: "results/carbon/"
+    tracking_mode: "machine"
+
+writer:
+  dataset_name: "Yelp"
+  writing_method: "local"
+  local_experiment_path: "results/" 
+  setup_experiment: True
+  save_split: True
+  recommendation:
+    k: 10 
+    save: True
+
+reader:
+  loading_strategy: "dataset"
+  data_type: "transaction"
+  reading_method: "local"
+  rating_type: "explicit"
+  local_path: "warp_output/yelp_context_ready.tsv"
+  sep: "\t"
+  header: True
+  labels:
+    user_id_label: "user_id"
+    item_id_label: "item_id"
+    rating_label: "rating"
+    timestamp_label: "timestamp" 
+  context_features: [hour_of_day, day_of_week, is_weekend, season,
+                     user_elite, user_experience, city, category,
+                     price_range, alcohol, outdoor_seating]
+  dtypes: 
+    user_id_type: "str"
+    item_id_type: "str"
+    rating_type: "float32"
+    timestamp_type: "str" 
+
+#splitter: 
+ # test_splitting:
+    #strategy: [temporal_holdout, temporal_leave_k_out, random_holdout, random_leave_k_out, timestamp_slicing]
+  #  strategy: "random_holdout" 
+  #  ratio: 0.2
+    
+splitter:
+  test_splitting:
+    strategy: "temporal_leave_k_out"
+    k: 1
+  validation_splitting:
+    strategy: "temporal_leave_k_out"
+    k: 1
+
+models:
+  Pop:
+    meta:
+        save_recs: True
+  Random:
+    meta:
+        save_recs: True
+  AFM:
+    embedding_size: 64
+    attention_size: 64
+    dropout: 0.3
+    reg_weight: 0.001
+    weight_decay: 0.0001
+    batch_size: 2048
+    epochs: 100
+    learning_rate: 0.001
+    neg_samples: 2
+    meta:
+        save_recs: True
+    early_stopping:
+      monitor: "score"   # monitora la validation metric (nDCG@10)
+      patience: 10       # ferma se non migliora per 10 epoch
+      grace_period: 20   # aspetta almeno 20 epoch prima di valutare
+      min_delta: 0.0001  # miglioramento minimo considerato significativo
+
+  FM:
+    embedding_size: 64
+    reg_weight: 0.001
+    batch_size: 2048
+    epochs: 100
+    learning_rate: 0.001
+    neg_samples: 2
+    meta:
+        save_recs: True
+    early_stopping:
+      monitor: "score"
+      patience: 10
+      grace_period: 20
+      min_delta: 0.0001
+
+  DeepFM:
+    embedding_size: 64
+    mlp_hidden_size: [64, 32]
+    dropout: 0.3
+    reg_weight: 0.001
+    weight_decay: 0.0001
+    batch_size: 2048
+    epochs: 100
+    learning_rate: 0.001
+    neg_samples: 2
+    meta:
+        save_recs: True
+    early_stopping:
+      monitor: "score"
+      patience: 10
+      grace_period: 20
+      min_delta: 0.0001
+  NFM:
+    embedding_size: 64
+    mlp_hidden_size: [64, 32]
+    dropout: 0.3
+    reg_weight: 0.001
+    weight_decay: 0.0001
+    batch_size: 2048
+    epochs: 100
+    learning_rate: 0.001
+    neg_samples: 2
+    meta:
+        save_recs: True
+    early_stopping:
+      monitor: "score"
+      patience: 10
+      grace_period: 20
+      min_delta: 0.0001
+  xDeepFM:
+    embedding_size: 64
+    mlp_hidden_size: [64, 32]
+    cin_layer_size: [64, 64]
+    dropout: 0.3
+    direct: False
+    reg_weight: 0.001
+    weight_decay: 0.0001
+    batch_size: 2048
+    epochs: 100
+    learning_rate: 0.001
+    neg_samples: 2
+    meta:
+        save_recs: True
+    early_stopping:
+      monitor: "score"
+      patience: 10
+      grace_period: 20
+      min_delta: 0.0001
+
+evaluation:
+  top_k: [5, 10]
+  metrics: ["AUC", "NDCG", "MAP", "MRR", "PRECISION", "RECALL"]
+  complex_metrics:
+    - name: "ACC"
+      params: {}
+    - name: "CS"
+      params: {}
+    - name: "WCS"
+      params: {}
+    - name: "CRC"
+      params: {}
+    - name: "CGB"
+      params: {}
+    - name: "CW-nDCG"
+      params: {}
+    - name: "CW-MAP"
+      params: {}
+  relevance_threshold: 4.0
+  save_per_user: True
