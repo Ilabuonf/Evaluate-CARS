@@ -2,14 +2,14 @@
 Yelp Context Feature Extraction
 =====================================
 
-Feature estratte:
-    - Temporali (dalla review date): hour_of_day, day_of_week, is_weekend, season, time_slot
-    - Utente (dal JSON user):        user_elite, user_experience
-    - Business (dal JSON business):  city, category, price_range, alcohol, outdoor_seating
+Features extracted:
+    - Temporal (from review date): hour_of_day, day_of_week, is_weekend, season, time_slot
+    - User (from JSON user):       user_elite, user_experience
+    - Business (from JSON business): city, category, price_range, alcohol, outdoor_seating
 
 Output:
-    - warp_output/yelp_context_ready.tsv  → dataset completo per WarpRec
-    - warp_output/yelp_context_info.tsv   → context_info item con TUTTE le feature
+    - warp_output/yelp_context_ready.tsv  → complete dataset for WarpRec
+    - warp_output/yelp_context_info.tsv   → context_info item with ALL features
 
 Usage:
     python prepare_yelp_context.py
@@ -170,11 +170,11 @@ item_codes = dict(zip(
 df_full["user_id"] = df_full["user_id_orig"].map(user_codes)
 df_full["item_id"] = df_full["business_id_orig"].map(item_codes)
 
-# Encoding categoriche
+# Categorical encoding
 for col in ["city", "category", "alcohol", "user_experience", "time_slot"]:
     df_full[col] = pd.Categorical(df_full[col]).codes
 
-# ─── Step 6: Salva dataset completo ──────────────────────────────────────────
+# ─── Step 6: Save complete dataset ──────────────────────────────────────────
 print("\nSTEP 6 — Saving complete context dataset...")
 
 output_cols = ["user_id", "item_id", "rating"] + CONTEXT_FEATURES
@@ -185,9 +185,9 @@ out_path = OUTPUT_DIR / "yelp_context_ready.tsv"
 df_out.to_csv(out_path, sep="\t", index=False)
 print(f"  Saved: {out_path} | Shape: {df_out.shape}")
 
-# ─── Step 7: Salva context_info item con TUTTE le feature ────────────────────
-# include anche feature temporali e utente (aggregate per mode per item)
-# Così user context e item context hanno le stesse feature
+# ─── Step 7: Save context_info item with ALL features ────────────────────
+# includes also temporal and user features (aggregated by mode per item)
+# So user context and item context have the same features
 print("\nSTEP 7 — Saving item context info (ALL features)...")
 
 df_item_ctx = (

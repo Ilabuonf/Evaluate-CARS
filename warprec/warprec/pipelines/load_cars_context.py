@@ -24,6 +24,11 @@ FEATURE_GROUPS = {
     "social":        [4, 5],
     "business_info": [6, 7, 8, 9, 10],
 }
+FEATURE_GROUPS_FRAPPE = {
+    "temporal":     [0, 1, 2],   # daytime, weekday, isweekend
+    "activity":     [3, 4],      # homework, cost
+    "environment":  [5, 6, 7],   # weather, country, city
+}
 
 
 def compute_idf_weights(

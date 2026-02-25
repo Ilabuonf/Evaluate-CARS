@@ -141,6 +141,10 @@ class BaseCARSMetric(BaseMetric):
         user_ctx = self._get_user_ctx(users)              # [N, F]
         match = self._context_match(user_ctx, item_ctx)   # [N, k, F]
 
+        if self.all_user_indices.shape[0] > 0:
+            # Print the first user of the first batch
+            print(f"DEBUG REAL MATCH (User {users[0]}): {match[0].mean(dim=-1)}")
+
         scores = self._compute_cars(match, user_ctx, item_ctx, valid)
         print(f"[RESULT k={self.k}] {scores}")
         return scores

@@ -1,4 +1,3 @@
-# pylint: disable=too-many-branches, too-many-statements
 import os
 import time
 from typing import List, Tuple, Dict, Any
@@ -79,7 +78,41 @@ def train_pipeline(path: str):
         config=config,
     )
     logger.msg(f"CARS: Injecting context tensors into dataset stash on {config.general.device}...")
-    load_cars_context_to_dataset(main_dataset, device=config.general.device)
+    dataset_name = config.writer.dataset_name.lower()
+    if dataset_name == "frappe":
+        load_cars_context_to_dataset(
+            main_dataset,
+            context_data_path="warp_output/frappe_context_ready.tsv",
+            context_info_path="warp_output/frappe_context_info.tsv",
+            features=["daytime", "weekday", "isweekend", "homework", "cost", "weather", "country", "city"],
+            feature_groups={"temporal": [0,1,2], "activity": [3,4], "environment": [5,6,7]},
+            device=config.general.device,
+        )
+    elif dataset_name == "bgg":
+        load_cars_context_to_dataset(
+            main_dataset,
+            context_data_path="warp_output/bgg_context_ready.tsv",
+            context_info_path="warp_output/bgg_context_info.tsv",
+            features=[
+                "playing_time_very_short", "playing_time_short", "playing_time_moderate",
+                "playing_time_long", "playing_time_very_long",
+                "gaming_mood_party", "gaming_mood_easy-going", "gaming_mood_expert",
+                "gaming_mood_intense", "gaming_mood_cooperative", "gaming_mood_competitive",
+                "gaming_mood_thematic", "gaming_mood_story-based",
+                "social_companion_1-player", "social_companion_2-players",
+                "social_companion_large-group", "social_companion_toddlers",
+                "social_companion_preschoolers", "social_companion_children",
+                "social_companion_family", "social_companion_friends",
+            ],
+            feature_groups={
+                "playing_time": [0, 1, 2, 3, 4],
+                "gaming_mood":  [5, 6, 7, 8, 9, 10, 11, 12],
+                "social":       [13, 14, 15, 16, 17, 18, 19, 20],
+            },
+            device=config.general.device,
+        )
+    else:  # default Yelp
+        load_cars_context_to_dataset(main_dataset, device=config.general.device)
 
     # Write split information if required
     if config.splitter and config.writer.save_split:

@@ -1,6 +1,6 @@
 #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
 general:
-  experiment_name: "yelp_afm_test"
+  experiment_name: "frappe_test"
   device: "cuda"
   backend: "polars"
   time_report: True
@@ -11,7 +11,7 @@ dashboard:
     team: "i-buonfrate-politecnico-di-bari"
     project: "EvaluateCars"
     api_key: "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"
-    group: "yelp_experiments"
+    group: "frappe_experiments"
     log_config: True
     upload_checkpoints: False
   codecarbon:
@@ -21,7 +21,7 @@ dashboard:
     tracking_mode: "machine"
 
 writer:
-  dataset_name: "Yelp"
+  dataset_name: "Frappe"
   writing_method: "local"
   local_experiment_path: "results/" 
   setup_experiment: True
@@ -35,7 +35,7 @@ reader:
   data_type: "transaction"
   reading_method: "local"
   rating_type: "explicit"
-  local_path: "warp_output/yelp_context_ready.tsv"
+  local_path: "warp_output/frappe_context_ready.tsv"
   sep: "\t"
   header: True
   labels:
@@ -43,9 +43,7 @@ reader:
     item_id_label: "item_id"
     rating_label: "rating"
     timestamp_label: "timestamp" 
-  context_features: [hour_of_day, day_of_week, is_weekend, season,
-                     user_elite, user_experience, city, category,
-                     price_range, alcohol, outdoor_seating]
+  context_features: [daytime, weekday, isweekend, homework, cost, weather, country, city]
   dtypes: 
     user_id_type: "str"
     item_id_type: "str"
@@ -140,25 +138,6 @@ models:
       patience: 10
       grace_period: 20
       min_delta: 0.0001
-  #xDeepFM:
-   # embedding_size: 64
-   # mlp_hidden_size: [64, 32]
-    #cin_layer_size: [64, 64]
-    #dropout: 0.3
-    #direct: False
-    #reg_weight: 0.001
-    #weight_decay: 0.0001
-    #batch_size: 2048
-    #epochs: 100
-    #learning_rate: 0.001
-    #neg_samples: 2
-    #meta:
-    #    save_recs: false
-    #early_stopping:
-    #  monitor: "score"
-    #  patience: 10
-    #  grace_period: 20
-    #  min_delta: 0.0001
   xDeepFM:
     embedding_size: 32          
     mlp_hidden_size: [32, 16]    
@@ -203,5 +182,5 @@ evaluation:
       params: {}
     - name: "CW-MAP"
       params: {}
-  relevance_threshold: 4.0
+  relevance_threshold: 1.0
   save_per_user: False

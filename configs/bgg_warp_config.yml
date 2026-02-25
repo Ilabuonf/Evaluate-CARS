@@ -1,6 +1,5 @@
-#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
 general:
-  experiment_name: "yelp_afm_test"
+  experiment_name: "bgg_test"
   device: "cuda"
   backend: "polars"
   time_report: True
@@ -11,7 +10,7 @@ dashboard:
     team: "i-buonfrate-politecnico-di-bari"
     project: "EvaluateCars"
     api_key: "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"
-    group: "yelp_experiments"
+    group: "bgg_experiments"
     log_config: True
     upload_checkpoints: False
   codecarbon:
@@ -21,13 +20,13 @@ dashboard:
     tracking_mode: "machine"
 
 writer:
-  dataset_name: "Yelp"
+  dataset_name: "BGG"
   writing_method: "local"
-  local_experiment_path: "results/" 
+  local_experiment_path: "results/"
   setup_experiment: True
   save_split: True
   recommendation:
-    k: 10 
+    k: 10
     save: True
 
 reader:
@@ -35,29 +34,42 @@ reader:
   data_type: "transaction"
   reading_method: "local"
   rating_type: "explicit"
-  local_path: "warp_output/yelp_context_ready.tsv"
+  local_path: "warp_output/bgg_context_ready.tsv"
   sep: "\t"
   header: True
   labels:
     user_id_label: "user_id"
     item_id_label: "item_id"
     rating_label: "rating"
-    timestamp_label: "timestamp" 
-  context_features: [hour_of_day, day_of_week, is_weekend, season,
-                     user_elite, user_experience, city, category,
-                     price_range, alcohol, outdoor_seating]
-  dtypes: 
+    timestamp_label: "timestamp"
+  context_features:
+    - playing_time_very_short
+    - playing_time_short
+    - playing_time_moderate
+    - playing_time_long
+    - playing_time_very_long
+    - gaming_mood_party
+    - "gaming_mood_easy-going"
+    - gaming_mood_expert
+    - gaming_mood_intense
+    - gaming_mood_cooperative
+    - gaming_mood_competitive
+    - gaming_mood_thematic
+    - "gaming_mood_story-based"
+    - "social_companion_1-player"
+    - "social_companion_2-players"
+    - "social_companion_large-group"
+    - social_companion_toddlers
+    - social_companion_preschoolers
+    - social_companion_children
+    - social_companion_family
+    - social_companion_friends
+  dtypes:
     user_id_type: "str"
     item_id_type: "str"
     rating_type: "float32"
-    timestamp_type: "str" 
+    timestamp_type: "str"
 
-#splitter: 
- # test_splitting:
-    #strategy: [temporal_holdout, temporal_leave_k_out, random_holdout, random_leave_k_out, timestamp_slicing]
-  #  strategy: "random_holdout" 
-  #  ratio: 0.2
-    
 splitter:
   test_splitting:
     strategy: "temporal_leave_k_out"
@@ -69,10 +81,10 @@ splitter:
 models:
   Pop:
     meta:
-        save_recs: True
+      save_recs: True
   Random:
     meta:
-        save_recs: True
+      save_recs: True
   AFM:
     embedding_size: 64
     attention_size: 64
@@ -84,13 +96,12 @@ models:
     learning_rate: 0.001
     neg_samples: 2
     meta:
-        save_recs: True
+      save_recs: True
     early_stopping:
-      monitor: "score"   # monitora la validation metric (nDCG@10)
-      patience: 10       # ferma se non migliora per 10 epoch
-      grace_period: 20   # aspetta almeno 20 epoch prima di valutare
-      min_delta: 0.0001  # miglioramento minimo considerato significativo
-
+      monitor: "score"
+      patience: 10
+      grace_period: 20
+      min_delta: 0.0001
   FM:
     embedding_size: 64
     reg_weight: 0.001
@@ -99,13 +110,12 @@ models:
     learning_rate: 0.001
     neg_samples: 2
     meta:
-        save_recs: True
+      save_recs: True
     early_stopping:
       monitor: "score"
       patience: 10
       grace_period: 20
       min_delta: 0.0001
-
   DeepFM:
     embedding_size: 64
     mlp_hidden_size: [64, 32]
@@ -117,7 +127,7 @@ models:
     learning_rate: 0.001
     neg_samples: 2
     meta:
-        save_recs: True
+      save_recs: True
     early_stopping:
       monitor: "score"
       patience: 10
@@ -134,31 +144,13 @@ models:
     learning_rate: 0.001
     neg_samples: 2
     meta:
-        save_recs: True
+      save_recs: True
     early_stopping:
       monitor: "score"
       patience: 10
       grace_period: 20
       min_delta: 0.0001
-  #xDeepFM:
-   # embedding_size: 64
-   # mlp_hidden_size: [64, 32]
-    #cin_layer_size: [64, 64]
-    #dropout: 0.3
-    #direct: False
-    #reg_weight: 0.001
-    #weight_decay: 0.0001
-    #batch_size: 2048
-    #epochs: 100
-    #learning_rate: 0.001
-    #neg_samples: 2
-    #meta:
-    #    save_recs: false
-    #early_stopping:
-    #  monitor: "score"
-    #  patience: 10
-    #  grace_period: 20
-    #  min_delta: 0.0001
+
   xDeepFM:
     embedding_size: 32          
     mlp_hidden_size: [32, 16]    
@@ -203,5 +195,5 @@ evaluation:
       params: {}
     - name: "CW-MAP"
       params: {}
-  relevance_threshold: 4.0
+  relevance_threshold: 7.0
   save_per_user: False
