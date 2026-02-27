@@ -12,8 +12,6 @@ Context tensors:
 Both are stored as buffers (like feature_lookup in SRecall) and passed
 via common_params from the Evaluator (populated from dataset.get_stash()).
 
-FIX: Use tensor-based accumulation (torch.cat) instead of list-based
-add_state, which TorchMetrics does not track correctly for appending.
 """
 
 from abc import abstractmethod

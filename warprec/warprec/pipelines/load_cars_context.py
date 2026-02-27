@@ -1,10 +1,6 @@
 """
-load_cars_context.py — Carica i tensori di contesto CARS nello stash del dataset WarpRec,
-allineando gli indici agli indici interni di WarpRec (non all'ordinamento del CSV).
-
-Problema risolto: il CSV originale ha 143686 utenti, ma WarpRec filtra e rimappa
-a 10202 utenti interni (0-10201). Senza allineamento, user_context_lookup[internal_idx]
-restituiva il contesto dell'utente sbagliato.
+load_cars_context.py — Loads CARS context tensors into the WarpRec dataset stash,
+aligning indices with WarpRec internal mappings (instead of CSV order).
 """
 
 import torch
@@ -12,18 +8,21 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 
-
+# Default features for Yelp dataset
 CONTEXT_FEATURES = [
     "hour_of_day", "day_of_week", "is_weekend", "season",
     "user_elite", "user_experience",
     "city", "category", "price_range", "alcohol", "outdoor_seating",
 ]
 
+# Feature group indices for specific metrics like CGB
 FEATURE_GROUPS = {
     "temporal":      [0, 1, 2, 3],
     "social":        [4, 5],
     "business_info": [6, 7, 8, 9, 10],
 }
+
+# Feature group indices for Frappe dataset
 FEATURE_GROUPS_FRAPPE = {
     "temporal":     [0, 1, 2],   # daytime, weekday, isweekend
     "activity":     [3, 4],      # homework, cost
@@ -37,14 +36,16 @@ def compute_idf_weights(
     num_items: int,
     device: str = "cpu",
 ) -> torch.Tensor:
+    """Computes IDF-like weights for each context feature."""
     weights = []
     for feat in features:
         if feat not in ctx_df.columns:
             weights.append(1.0)
             continue
+        # Count unique occurrences to determine feature rarity
         n_unique = ctx_df[feat].nunique()
         idf = np.log(num_items / max(n_unique, 1))
-        weights.append(max(idf, 0.01))
+        weights.append(max(idf, 0.01))  # Ensure a minimum weight
     return torch.tensor(weights, dtype=torch.float32).to(device)
 
 
@@ -57,19 +58,11 @@ def load_cars_context_to_dataset(
     device: str = "cuda",
 ):
     """
-    Carica i tensori di contesto CARS nello stash del dataset WarpRec.
+    Loads CARS context tensors into the WarpRec dataset stash.
 
-    I tensori vengono costruiti usando le mappature interne WarpRec
-    (dataset.get_mappings()) per garantire che user_context_lookup[internal_idx]
-    restituisca il contesto corretto per ogni utente/item.
-
-    Args:
-        dataset: Istanza di warprec.data.Dataset.
-        context_data_path: Path al TSV delle transazioni con features di contesto.
-        context_info_path: Path al TSV delle features aggregate per item.
-        features: Lista di features da usare (default: CONTEXT_FEATURES).
-        feature_groups: Gruppi di features per CGB (default: FEATURE_GROUPS).
-        device: Device PyTorch ("cuda" o "cpu").
+    Tensors are built using WarpRec internal mappings (dataset.get_mappings())
+    to ensure that context_lookup[internal_idx] returns the correct context 
+    for each specific user or item.
     """
     if features is None:
         features = CONTEXT_FEATURES
@@ -78,26 +71,25 @@ def load_cars_context_to_dataset(
 
     print(f"[CARS] Loading context tensors into dataset stash on device: {device}...")
 
-    # ── Mappature interne WarpRec ─────────────────────────────────────────────
-    # user_mapping: {user_id_str -> internal_idx (0-based)}
-    # item_mapping: {item_id_str -> internal_idx (0-based)}
+    # --- Get internal WarpRec mappings ---
+    # user_mapping: {user_id_str -> internal_idx}
+    # item_mapping: {item_id_str -> internal_idx}
     user_mapping, item_mapping = dataset.get_mappings()
     num_users = len(user_mapping)
     num_items = len(item_mapping)
 
-    # ── Carica CSV ────────────────────────────────────────────────────────────
+    # --- Load CSV files ---
     ctx_df = pd.read_csv(context_data_path, sep="\t", dtype={"user_id": str, "item_id": str})
     item_ctx_df = pd.read_csv(context_info_path, sep="\t", dtype={"item_id:token": str})
 
     available_user_features = [f for f in features if f in ctx_df.columns]
     available_item_features = [f for f in features if f in item_ctx_df.columns]
 
-    # ── User context: mode per utente, allineata agli indici interni ──────────
+    # --- User context: calculate mode per user and align with internal indices ---
     user_ctx_agg = (
         ctx_df.groupby("user_id")[available_user_features]
         .agg(lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0])
     )
-    # user_ctx_agg.index sono user_id_str
 
     user_ctx_tensor = torch.zeros(num_users, len(available_user_features), dtype=torch.float32)
     missing_users = 0
@@ -113,7 +105,7 @@ def load_cars_context_to_dataset(
 
     user_ctx_tensor = user_ctx_tensor.to(device)
 
-    # ── Item context: allineata agli indici interni ───────────────────────────
+    # --- Item context: align with internal indices ---
     item_ctx_indexed = item_ctx_df.set_index("item_id:token")
 
     item_ctx_tensor = torch.zeros(num_items, len(available_item_features), dtype=torch.float32)
@@ -130,20 +122,20 @@ def load_cars_context_to_dataset(
 
     item_ctx_tensor = item_ctx_tensor.to(device)
 
-    # ── IDF weights ───────────────────────────────────────────────────────────
+    # --- Compute IDF weights for features ---
     idf_weights = compute_idf_weights(
         item_ctx_df, available_item_features,
         num_items=num_items, device=device,
     )
 
-    # ── Feature groups (filtra indici fuori range) ────────────────────────────
+    # --- Feature groups adjustment (filter out-of-range indices) ---
     adjusted_groups = {}
     for group_name, feat_indices in feature_groups.items():
         adjusted = [i for i in feat_indices if i < len(available_item_features)]
         if adjusted:
             adjusted_groups[group_name] = adjusted
 
-    # ── Aggiungi allo stash ───────────────────────────────────────────────────
+    # --- Store processed data into the dataset stash ---
     dataset.add_to_stash("item_context_lookup", item_ctx_tensor)
     dataset.add_to_stash("user_context_lookup", user_ctx_tensor)
     dataset.add_to_stash("context_feature_weights", idf_weights)

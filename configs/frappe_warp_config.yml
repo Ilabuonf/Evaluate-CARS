@@ -168,6 +168,12 @@ evaluation:
       params: {}
     - name: "WCS"
       params: {}
+    - name: "WCS_Group"
+      params:
+        group_definitions:
+          Temporal:    [0, 1, 2]
+          Activity:    [3, 4]
+          Environment: [5, 6, 7]
     - name: "WCA"
       params: {}
     - name: "Friction"

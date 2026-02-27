@@ -37,24 +37,26 @@ class CWnDCG(_CWBase):
     def _compute_cars(self, match, user_ctx, item_ctx, valid) -> dict:
         if not self.all_binary_rel:
             return {f"CW-nDCG@{self.k}": 0.0}
-
-        device = match.device
-        binary_rel = torch.cat(self.all_binary_rel, dim=0).to(device)  # [N, k]
-        ctx_w = self._context_weights(match)                         # [N, k]
-        cw_rel = self._cw_relevance(binary_rel, ctx_w)               # [N, k]
-
-        # DCG with context-weighted relevance
-        positions = torch.arange(1, self.k + 1, dtype=torch.float,
-                                  device=device)
-        discount = 1.0 / torch.log2(positions + 1)                   # [k]
-        dcg = (cw_rel * discount).sum(dim=1)                         # [N]
-
-        # IDCG: ideal = all items relevant with full context match
-        ideal_rel = torch.ones_like(cw_rel)
-        idcg = (ideal_rel * discount).sum(dim=1).clamp(min=1e-10)    # [N]
-
+    
+        device    = match.device
+        bin_rel   = torch.cat(self.all_binary_rel, dim=0).to(device)  # [N, k]
+        ctx_w     = self._context_weights(match)                       # [N, k]
+        cw_rel    = self._cw_relevance(bin_rel, ctx_w)                 # [N, k]  in [0, 1]
+    
+        positions = torch.arange(1, self.k + 1, dtype=torch.float, device=device)
+        discount  = 1.0 / torch.log2(positions + 1)                   # [k]
+    
+        # exponential gain (2^rel_cw − 1) 
+        gain      = (2.0 ** cw_rel) - 1.0                             # [N, k]
+        dcg       = (gain * discount).sum(dim=1)                      # [N]
+    
+        # IDCG: ideal binary relevance → gain = 2^1 - 1 = 1 for all positions
+        ideal_gain = torch.ones_like(cw_rel)                          # [N, k]
+        idcg      = (ideal_gain * discount).sum(dim=1).clamp(min=1e-10)  # [N]
+    
         ndcg = (dcg / idcg).nan_to_num(0.0)
         return {f"CW-nDCG@{self.k}": self._weighted_mean(ndcg, valid)}
+
 
 
 @metric_registry.register("CW-MAP")
