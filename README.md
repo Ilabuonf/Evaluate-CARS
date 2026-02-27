@@ -1,93 +1,62 @@
 # Evaluate-CARS
 ### Comprehensive Evaluation Framework for Context-Aware Recommendation Systems
 
-A complete pipeline for training and evaluating context-aware recommendation models on multiple datasets (BoardGameGeek, Frappe, Yelp) with extensive context-aware metrics.
+A complete pipeline for training and evaluating context-aware recommendation models on multiple datasets (**BoardGameGeek**, **Frappe**, **Yelp**) using **WarpRec** as the underlying recommendation framework, with an extensive suite of context-aware metrics.
 
 ---
 
 ## Overview
 This framework provides:
-* **End-to-end training pipelines** for context-aware recommender systems.
-* **Comprehensive evaluation metrics** including traditional, context-specific, and advanced metrics.
-* **Support for multiple datasets**: BoardGameGeek (BGG), Frappe, Yelp.
-* **Multiple CTR models**: FM, AFM, FFM, FwFM, DeepFM, and baseline models (Random, Popularity).
+* **End-to-end training pipelines** for context-aware recommender systems via WarpRec.
+* **Distributed hyperparameter optimisation** using Ray Tune with early stopping.
+* **Comprehensive evaluation metrics** including traditional ranking, context-specific, and advanced context-dynamics metrics.
+* **Support for three datasets**: BoardGameGeek (BGG), Frappe, Yelp.
+* **Five CTR models**: FM, DeepFM, NFM, AFM, xDeepFM — plus baseline models (Random, Popularity).
 * **Context-weighted ranking metrics**: CW-nDCG, CW-MAP.
-* **Automated evaluation scripts** with parallel execution support.
-
----
-
-## Key Features
-
-### Training Pipeline
-* Automatic data preprocessing and RecBole format conversion.
-* Support for 6+ CTR models with hyperparameter configurations.
-* Baseline model implementations (Random, Popularity).
-* GPU acceleration support.
-* Automatic checkpoint saving.
-
-### Evaluation Metrics
-**Traditional Ranking Metrics:**
-* AUC, LogLoss
-* nDCG@5/10, MAP@10, MRR@10
-* Precision@5, Recall@10
-
-**Context-Aware Metrics:**
-* **Context Consistency (ACC@K)**: Measures feature-level matching.
-* **Context Satisfaction (CS@K, WCS@K)**: Modified Jaccard similarity with IDF weighting.
-* **Similarity Metrics**: WCA (Weighted Cosine), Friction (Inverted Hamming).
-* **Advanced Metrics**: Context Recall (CR@K), Context Ranking Correlation (CRC@K), Context Group Balance (CGB@K).
-* **Context-Weighted Ranking**: CW-nDCG@K, CW-MAP@K.
-* **Dimensional Analysis**: Feature group-wise evaluation.
+* **Experiment tracking** with Weights & Biases and energy monitoring via CodeCarbon.
 
 ---
 
 ## Repository Structure
-
 ```text
 Evaluate-CARS/
-├── configs/                  # YAML configuration files
-│   ├── bgg_config.yaml      # BoardGameGeek settings
-│   ├── frappe_config.yaml   # Frappe settings
-│   └── yelp_config.yaml     # Yelp settings
+├── configs/                        # WarpRec YAML configuration files
+│   ├── bgg_warp_config.yml
+│   ├── frappe_warp_config.yml
+│   └── yelp_warp_config.yml
 │
-├── datasets/                 # Dataset storage
-│   ├── bgg/                 # BoardGameGeek data
-│   ├── frappe/              # Frappe data
-│   └── yelp/                # Yelp data
+├── datasets/                       # Raw dataset storage
+│   ├── bgg/
+│   ├── frappe/
+│   └── yelp/
 │
-├── src/                      # Core source code
-│   ├── metrics/             # Metric implementations
-│   │   ├── context_consistency.py
-│   │   ├── context_satisfaction.py
-│   │   ├── similarity_metrics.py
-│   │   ├── advanced_metrics.py
-│   │   └── weighted_ranking.py
-│   │
-│   ├── models/              # Model implementations
-│   │   └── baselines.py    # Random & Popularity
-│   │
-│   ├── pipelines/           # Training pipelines
-│   │   ├── base_pipeline.py
-│   │   ├── bgg_pipeline.py
-│   │   ├── frappe_pipeline.py
-│   │   └── yelp_pipeline.py
-│   │
-│   └── utils/               # Utility functions
+├── warprec_preprocess/             # Dataset preprocessing for WarpRec
+│   ├── prepare_bgg_context.py      # BGG context tensor construction
+│   ├── prepare_frappe_context.py   # Frappe context tensor construction
+│   ├── prepare_yelp_context.py     # Yelp context tensor construction
+│   ├── cars_callback.py            # WarpRec CARS evaluation callback
+│   └── json_to_csv.py              # Format conversion utility
 │
-├── evaluators/              # Complete evaluators
-│   ├── evaluate_bgg.py     # BGG evaluator
-│   ├── evaluate_frappe.py  # Frappe evaluator
-│   └── evaluate_yelp.py    # Yelp evaluator
+├── warprec/                        # WarpRec framework (local)
 │
-├── scripts/                 # Automation scripts
-│   ├── run_bgg_pipeline.sh
-│   ├── run_frappe_pipeline.sh
-│   ├── run_yelp_pipeline.sh
-│   └── evaluate_all.sh
+├── outputs/                        # Model predictions (top-K per dataset)
+│   ├── bgg/
+│   ├── frappe/
+│   └── yelp/
 │
-├── outputs/                 # Model outputs & predictions
-└── results/                 # Evaluation results & visualizations
-```
+├── results/                        # Evaluation metric outputs
+│   ├── bgg/   
+│   ├── frappe/ 
+│   ├── yelp/   
+│   └── carbon/                     # CodeCarbon emissions logs
+│
+├── figures/                        # Generated plots (W&B learning curves)
+├── warp_output/                    # WarpRec training artefacts & time reports
+├── log/                            # Run logs
+│
+├── wand_plots.py                   # W&B learning curve generation
+├── test_real_dataset.py            # Dataset validation script
+└── requirements.txt
 
 ### Installation
 # Clone repository
@@ -95,61 +64,29 @@ git clone [https://github.com/Ilabuonf/Evaluate-CARS.git](https://github.com/Ila
 cd Evaluate-CARS
 
 ### 1. Install dependencies
-pip install pandas numpy scipy scikit-learn
-
-pip install recbole  # For CTR models
-
-pip install ranx     # For ranking metrics
-
-pip install tqdm matplotlib seaborn  # Optional: progress bars & visualization
+pip install -r requirements.txt
 
 ### 2. Data Preparation
-Place your datasets in the appropriate directories:
-```text
-datasets/
-├── bgg/
-│   ├── train_df.tsv
-│   ├── test_df.tsv
-│   └── context_info.tsv
-├── frappe/
-│   ├── frappe_train.csv
-│   └── frappe_test.csv
-└── yelp/
-    ├── yelp_train.csv
-    └── yelp_test.csv
-```
-### 3. Training Models
+python warprec_preprocess/prepare_bgg_context.py
+python warprec_preprocess/prepare_frappe_context.py
+python warprec_preprocess/prepare_yelp_context.py
 
-**Option A: Single Dataset (via module execution)**
-```bash
-# Train all models on BGG
-python -m src.pipelines.bgg_pipeline
 
-# Train on Frappe
-python -m src.pipelines.frappe_pipeline
-
-# Train on Yelp
-python -m src.pipelines.yelp_pipeline
-```
-
-**Option B: Using Automation Scripts**
-```bash
-# Full pipeline (train + evaluate)
-./scripts/run_bgg_pipeline.sh
-
-# Training only
-./scripts/run_bgg_pipeline.sh --train-only
-
-# Evaluation only (if models are already trained)
-./scripts/run_bgg_pipeline.sh --eval-only
-```
-### 4. Evaluation
+### 3. Run training and evaluation
 Run evaluation for a specific dataset:
-```bash
-python -m evaluators.evaluate_bgg
-python -m evaluators.evaluate_frappe
-python -m evaluators.evaluate_yelp
-```
+# BoardGameGeek
+python -m warprec --config configs/bgg_warp_config.yml
+
+# Frappe
+python -m warprec --config configs/frappe_warp_config.yml
+
+# Yelp
+python -m warprec --config configs/yelp_warp_config.yml
+
+WarpRec handles hyperparameter search via Ray Tune, per-epoch validation, early stopping (patience 10, grace 20), and final test evaluation. Predictions are written to outputs/<dataset>/.
+
+
+
 
 ## Datasets
 
@@ -207,3 +144,20 @@ Integrates context similarity directly into traditional relevance:
 * **CW-nDCG@K**: 
   $$CW\text{-}DCG = \sum_{k=1}^{K} \frac{(2^{rel_k} - 1) \cdot \text{sim}(C_q, C_k)}{\log_2(k+1)}$$
 * **CW-MAP@K**: MAP weighted by context similarity (CS, WCA, or Friction).
+
+## Acknowledgments
+This evaluation framework is built upon **WarpRec**, an open-source recommendation framework developed by **SisInfLab** (Politecnico di Bari). WarpRec provides the core infrastructure for model training, dataset splitting, and hyperparameter optimization used in this project.
+For more information, visit the [WarpRec Repository](https://github.com/sisinflab/warprec).
+
+## Citation
+If you use this framework or the proposed metrics, please cite the following:
+
+**This Thesis:**
+```bibtex
+@mastersthesis{buonfrate2026evaluate,
+  author  = {Ilaria Buonfrate},
+  title   = {Evaluate-CARS: A Comprehensive Evaluation Framework for
+             Context-Aware Recommendation Systems},
+  school  = {Politecnico di Bari},
+  year    = {2026}
+}
