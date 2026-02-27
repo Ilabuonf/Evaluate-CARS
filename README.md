@@ -57,6 +57,7 @@ Evaluate-CARS/
 ├── wand_plots.py                   # W&B learning curve generation
 ├── test_real_dataset.py            # Dataset validation script
 └── requirements.txt
+```
 
 ### Installation
 # Clone repository
@@ -67,13 +68,16 @@ cd Evaluate-CARS
 pip install -r requirements.txt
 
 ### 2. Data Preparation
+```bash
 python warprec_preprocess/prepare_bgg_context.py
 python warprec_preprocess/prepare_frappe_context.py
 python warprec_preprocess/prepare_yelp_context.py
+```
 
 
 ### 3. Run training and evaluation
 Run evaluation for a specific dataset:
+```bash
 # BoardGameGeek
 python -m warprec --config configs/bgg_warp_config.yml
 
@@ -82,10 +86,9 @@ python -m warprec --config configs/frappe_warp_config.yml
 
 # Yelp
 python -m warprec --config configs/yelp_warp_config.yml
+```
 
 WarpRec handles hyperparameter search via Ray Tune, per-epoch validation, early stopping (patience 10, grace 20), and final test evaluation. Predictions are written to outputs/<dataset>/.
-
-
 
 
 ## Datasets
