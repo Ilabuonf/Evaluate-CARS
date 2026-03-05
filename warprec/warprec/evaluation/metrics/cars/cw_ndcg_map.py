@@ -14,7 +14,6 @@ class _CWBase(BaseCARSMetric):
         super().update(preds, **kwargs)
         binary_rel = kwargs.get(f"top_{self.k}_binary_relevance")
         if binary_rel is not None:
-            # RIMOSSO .cpu() per mantenere i dati in GPU
             self.all_binary_rel.append(binary_rel)
 
     def _context_weights(self, match: Tensor) -> Tensor:
@@ -23,7 +22,6 @@ class _CWBase(BaseCARSMetric):
 
     def _cw_relevance(self, binary_rel: Tensor, ctx_weights: Tensor) -> Tensor:
         """Context-weighted relevance: rel * ctx_weight. Returns [N, k]."""
-        # Assicura che binary_rel sia sul device dei pesi contestuali (GPU)
         return binary_rel.to(ctx_weights.device) * ctx_weights
 
 
@@ -50,9 +48,10 @@ class CWnDCG(_CWBase):
         gain      = (2.0 ** cw_rel) - 1.0                             # [N, k]
         dcg       = (gain * discount).sum(dim=1)                      # [N]
     
-        # IDCG: ideal binary relevance → gain = 2^1 - 1 = 1 for all positions
-        ideal_gain = torch.ones_like(cw_rel)                          # [N, k]
-        idcg      = (ideal_gain * discount).sum(dim=1).clamp(min=1e-10)  # [N]
+        # IDCG: sort cw_rel in descending order
+        ideal_cw_rel, _ = cw_rel.sort(dim=1, descending=True)   # [N, k]
+        ideal_gain = (2.0 ** ideal_cw_rel) - 1.0                 # [N, k]
+        idcg = (ideal_gain * discount).sum(dim=1).clamp(min=1e-10)
     
         ndcg = (dcg / idcg).nan_to_num(0.0)
         return {f"CW-nDCG@{self.k}": self._weighted_mean(ndcg, valid)}

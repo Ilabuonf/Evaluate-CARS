@@ -60,7 +60,7 @@ Evaluate-CARS/
 ```
 
 ### Installation
-# Clone repository
+### Clone repository
 git clone [https://github.com/Ilabuonf/Evaluate-CARS.git](https://github.com/Ilabuonf/Evaluate-CARS.git)
 cd Evaluate-CARS
 

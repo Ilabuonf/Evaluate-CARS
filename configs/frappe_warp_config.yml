@@ -139,14 +139,14 @@ models:
       grace_period: 20
       min_delta: 0.0001
   xDeepFM:
-    embedding_size: 32          
-    mlp_hidden_size: [32, 16]    
-    cin_layer_size: [32, 32]     
-    dropout: 0.3
+    embedding_size: 16           
+    mlp_hidden_size: [16, 8]     
+    cin_layer_size: [16]         
+    dropout: 0.4                 
     direct: True
     reg_weight: 0.001
     weight_decay: 0.0001
-    batch_size: 1024
+    batch_size: 512               
     epochs: 100
     learning_rate: 0.001
     neg_samples: 2

@@ -1,4 +1,4 @@
-"""CR@K — Context Recall (fraction of user context features matched by any top-k item)."""
+"""CR@K — Context Recall (fraction of user context features matched by top-k items)."""
 from torch import Tensor
 from warprec.utils.registry import metric_registry
 from .base_cars_metric import BaseCARSMetric
@@ -12,13 +12,13 @@ class CR(BaseCARSMetric):
         return f"CR@{self.k}"
 
     def _compute_cars(self, match, user_ctx, item_ctx, valid) -> dict:
-        # match: [N, k, F]  —  1.0 where item feature == user feature
-        #
-        # Theoretical CR: per-item recall, then mean over K items
-        # cr_i = |c_q ∩ c_i| / |c_q|  -->  fraction of query features matched by item i
-        #
-        # match already encodes "feature matches user context" per position.
-        # mean over F gives the fraction of features matched by each item.
-        per_item = match.mean(dim=-1)      # [N, k]  — per-item recall
-        per_user = per_item.mean(dim=1)    # [N]     — average over K items
+        # -1 is the sentinel for "no context data"
+        # Only features with a real value (>= 0) are counted as active
+        query_active = (user_ctx != -1).float()                        # [N, F]
+        n_query = query_active.sum(dim=-1).clamp(min=1e-10)            # [N]
+
+        intersection = (match * query_active.unsqueeze(1)).sum(dim=-1) # [N, k]
+        per_item = intersection / n_query.unsqueeze(1)                 # [N, k]
+        per_user = per_item.mean(dim=1)                                # [N]
+
         return {f"CR@{self.k}": self._weighted_mean(per_user, valid)}
