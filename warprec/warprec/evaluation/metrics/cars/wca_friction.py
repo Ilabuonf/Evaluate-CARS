@@ -24,17 +24,19 @@ class Friction(BaseCARSMetric):
 @metric_registry.register("WCA")
 class WCA(BaseCARSMetric):
     """WCA@K — Weighted Context Accuracy (IDF-weighted cosine similarity)."""
-
     def _metric_name(self) -> str:
         return f"WCA@{self.k}"
 
     def _compute_cars(self, match, user_ctx, item_ctx, valid) -> dict:
         w = self.feature_weights.to(match.device)                      # [F]
-        u = user_ctx * w                                               # [N, F]
-        i = item_ctx * w.unsqueeze(0).unsqueeze(0)                     # [N, k, F]
-        u_norm = u.norm(dim=-1, keepdim=True).clamp(min=1e-10)         # [N, 1]
-        i_norm = i.norm(dim=-1).clamp(min=1e-10)                       # [N, k]
-        dot = (i * u.unsqueeze(1)).sum(dim=-1)                         # [N, k]
-        cos = dot / (i_norm * u_norm)                                  # [N, k]
-        per_user = cos.mean(dim=1)                                     # [N]
+
+        # Numerator: sum_f w_f * c_q_f * c_i_f
+        dot = (user_ctx.unsqueeze(1) * item_ctx * w).sum(dim=-1)       # [N, k]
+
+        # Denominator: sqrt(sum_f w_f * c_q_f^2) * sqrt(sum_f w_f * c_i_f^2)
+        u_norm = ((user_ctx ** 2) * w).sum(dim=-1).sqrt().clamp(min=1e-10)          # [N]
+        i_norm = ((item_ctx ** 2) * w.unsqueeze(0).unsqueeze(0)).sum(dim=-1).sqrt().clamp(min=1e-10)  # [N, k]
+
+        cos = dot / (u_norm.unsqueeze(1) * i_norm)                     # [N, k]
+        per_user = cos.mean(dim=1)                                      # [N]
         return {f"WCA@{self.k}": self._weighted_mean(per_user, valid)}
