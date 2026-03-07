@@ -38,6 +38,33 @@ Evaluate-CARS/
 │   └── json_to_csv.py              # Format conversion utility
 │
 ├── warprec/                        # WarpRec framework (local)
+│   ├── callbacks/
+│   ├── config/
+│   ├── docs/
+│   ├── guides/
+│   ├── infer-api/
+│   ├── plots/
+│   ├── sample_pipelines/
+│   ├── tests/
+│   └── warprec/                    # Core WarpRec Python package
+│       ├── common/
+│       ├── data/
+│       ├── evaluation/
+│       │   └── metrics/
+│       │       └── cars/           # ← CARS evaluation metrics (this project)
+│       │           ├── base_cars_metric.py
+│       │           ├── acc.py
+│       │           ├── cs_wcs.py
+│       │           ├── wca_friction.py
+│       │           ├── cr.py
+│       │           ├── crc.py
+│       │           ├── cgb.py
+│       │           ├── wcs_group.py
+│       │           └── cw_metrics.py
+│       ├── pipelines/
+│       │   └── load_cars_context.py  # IDF weight computation & context loading
+│       ├── recommenders/
+│       └── utils/
 │
 ├── outputs/                        # Model predictions (top-K per dataset)
 │   ├── bgg/
@@ -45,9 +72,9 @@ Evaluate-CARS/
 │   └── yelp/
 │
 ├── results/                        # Evaluation metric outputs
-│   ├── bgg/   
-│   ├── frappe/ 
-│   ├── yelp/   
+│   ├── bgg/
+│   ├── frappe/
+│   ├── yelp/
 │   └── carbon/                     # CodeCarbon emissions logs
 │
 ├── figures/                        # Generated plots (W&B learning curves)
@@ -60,23 +87,23 @@ Evaluate-CARS/
 ```
 
 ### Installation
-### Clone repository
-git clone [https://github.com/Ilabuonf/Evaluate-CARS.git](https://github.com/Ilabuonf/Evaluate-CARS.git)
+```bash
+# Clone repository
+git clone https://github.com/Ilabuonf/Evaluate-CARS.git
 cd Evaluate-CARS
 
-### 1. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
+```
 
-### 2. Data Preparation
+### Data Preparation
 ```bash
 python warprec_preprocess/prepare_bgg_context.py
 python warprec_preprocess/prepare_frappe_context.py
 python warprec_preprocess/prepare_yelp_context.py
 ```
 
-
-### 3. Run training and evaluation
-Run evaluation for a specific dataset:
+### Run training and evaluation
 ```bash
 # BoardGameGeek
 python -m warprec --config configs/bgg_warp_config.yml
@@ -122,6 +149,8 @@ The Yelp Dataset is a comprehensive collection of data related to businesses, re
 Public dataset taken from: https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset/data
 
 ## Evaluation Metrics
+
+All metrics are implemented in `warprec/warprec/evaluation/metrics/cars/`.
 
 ### 1. Standard Ranking Metrics (Context-Agnostic)
 * **Precision@K / Recall@K**: Retrieval quality.
