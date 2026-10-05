@@ -121,7 +121,7 @@ WarpRec handles hyperparameter search via Ray Tune, per-epoch validation, early 
 
 ### 1. BoardGameGeek (BGG) - Board Game Recommendations
 Primary dataset focusing on entertainment with rich contextual constraints.
-* **Statistics:** 43,660 Users | 901 Items | 1,113,609 Interactions | 410 Unique Contexts.
+* **Statistics:** 43,649 users | 901 items | 1,090,177 positive interactions (rating ≥ 7)| 410 Unique Contexts.
 * **Context Features (21 binary features):**
     * *Playing Time:* very_short, short, moderate, long, very_long.
     * *Gaming Mood:* party, easy-going, expert, intense, cooperative, competitive, thematic, story-based.
@@ -131,7 +131,7 @@ Dataset published by professors at the Autonomous University of Madrid.
 
 ### 2. Frappe - Mobile Application Recommendations
 Mobile app usage dataset collected through crowdsourcing.
-* **Statistics:** 957 Users | 4,082 Items | 96,203 Interactions | 5,382 Unique Contexts.
+* **Statistics:** 957 users | 4,082 apps | 96,203 implicit positive interactions.
 * **Context Groups:** Temporal (daytime, weekday, weekend), Activity (homework, cost), Environment (weather, country, city).
   
 Public dataset taken from https://huggingface.co/datasets/reczoo/Frappe_x1
@@ -139,7 +139,7 @@ Public dataset taken from https://huggingface.co/datasets/reczoo/Frappe_x1
 ### 3. Yelp - Local Business Recommendations
 The Yelp Dataset is a comprehensive collection of data related to businesses, reviews, users, tips, and check-ins, specifically filtered for the restaurant and food domain.
 
-* **Statistics:** 45,651 Users | 16,237 Businesses | 604,498 Interactions | ~150k Unique Contexts.
+* **Statistics:** 143,686 users | 11,451 businesses | 200,001 sampled reviews, of which 139,315 with stars ≥ 4 are treated as positive.
 * **Context Groups:**
     * **Temporal:** hour_of_day, day_of_week, is_weekend.
     * **Social & User:** review_length, user_elite, user_experience, alcohol, outdoor_seating.
@@ -167,8 +167,7 @@ All metrics are implemented in `warprec/warprec/evaluation/metrics/cars/`.
 ### 3. Advanced Context-Centric Metrics
 * **CR@K (Context Recall)**: Percentage of requested context features covered by top-K items.
 * **CRC (Context Ranking Correlation)**: Spearman correlation between ranking position and context quality.
-* **CGB (Context Group Balance)**: Measures balance across context dimensions (Temporal, Social, Spatial):
-  $$CGB = 1 - \min\left(\frac{\sigma_{groups}}{0.5}, 1\right)$$
+* **CGB (Context Group Balance)**: Measures balance across context dimensions (Temporal, Social, Spatial).
 
 ### 4. Context-Weighted (CW) Ranking Metrics
 Integrates context similarity directly into traditional relevance:
