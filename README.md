@@ -178,18 +178,7 @@ Integrates context similarity directly into traditional relevance:
 * **CW-MAP@K**: MAP weighted by context similarity (CS, WCA, or Friction).
 
 ## Acknowledgments
-This evaluation framework is built upon **WarpRec**, an open-source recommendation framework developed by **SisInfLab** (Politecnico di Bari). WarpRec provides the core infrastructure for model training, dataset splitting, and hyperparameter optimization used in this project.
+This evaluation framework is built upon **WarpRec**, an open-source recommendation framework developed by **SisInfLab**. WarpRec provides the core infrastructure for model training, dataset splitting, and hyperparameter optimization used in this project.
 For more information, visit the [WarpRec Repository](https://github.com/sisinflab/warprec).
 
-## Citation
-If you use this framework or the proposed metrics, please cite the following:
 
-**This Thesis:**
-```bibtex
-@mastersthesis{buonfrate2026evaluate,
-  author  = {Ilaria Buonfrate},
-  title   = {Evaluate-CARS: A Comprehensive Evaluation Framework for
-             Context-Aware Recommendation Systems},
-  school  = {Politecnico di Bari},
-  year    = {2026}
-}
