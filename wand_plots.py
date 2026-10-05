@@ -12,7 +12,7 @@ import matplotlib.ticker as ticker
 from pathlib import Path
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-ENTITY  = "i-buonfrate-politecnico-di-bari"
+ENTITY  = "your-wandb-entity"
 PROJECT = "EvaluateCars"
 
 GROUPS = {
