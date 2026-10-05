@@ -88,8 +88,8 @@ Evaluate-CARS/
 
 ### Installation
 ```bash
-# Clone repository
-git clone https://github.com/Ilabuonf/Evaluate-CARS.git
+# Clone repository: Download the repository from the link and enter the folder
+git clone 
 cd Evaluate-CARS
 
 # Install dependencies
