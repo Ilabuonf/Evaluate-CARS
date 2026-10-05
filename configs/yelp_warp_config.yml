@@ -1,4 +1,3 @@
-#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
 general:
   experiment_name: "yelp_afm_test"
   device: "cuda"
@@ -86,10 +85,10 @@ models:
     meta:
         save_recs: True
     early_stopping:
-      monitor: "score"   # monitora la validation metric (nDCG@10)
-      patience: 10       # ferma se non migliora per 10 epoch
-      grace_period: 20   # aspetta almeno 20 epoch prima di valutare
-      min_delta: 0.0001  # miglioramento minimo considerato significativo
+      monitor: "score"   
+      patience: 10      
+      grace_period: 20   
+      min_delta: 0.0001  
 
   FM:
     embedding_size: 64
