@@ -178,7 +178,7 @@ Integrates context similarity directly into traditional relevance:
 * **CW-MAP@K**: MAP weighted by context similarity (CS, WCA, or Friction).
 
 ## Acknowledgments
-This evaluation framework is built upon **WarpRec**, an open-source recommendation framework developed by **SisInfLab**. WarpRec provides the core infrastructure for model training, dataset splitting, and hyperparameter optimization used in this project.
+This evaluation framework is built upon **WarpRec**, an open-source recommendation framework. WarpRec provides the core infrastructure for model training, dataset splitting, and hyperparameter optimization used in this project.
 For more information, visit the [WarpRec Repository](https://github.com/sisinflab/warprec).
 
 
