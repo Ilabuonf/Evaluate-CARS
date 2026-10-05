@@ -1,8 +1,8 @@
 """
 wandb_plots.py — Learning curves per dataset, publication quality
-Metriche reali: nDCG@10, loss  |  X: training_iteration
-Ogni run = un trial HPE (set di iperparametri), più run per modello
-Il grafico mostra: media ± std tra trial dello stesso modello
+Metrics: nDCG@10, loss  |  X: training_iteration
+Each run = one HPE trial (set of hyperparameters); multiple runs per model
+The graph shows: mean ± standard deviation across trials of the same model
 """
 
 import wandb
@@ -130,7 +130,7 @@ def plot_dataset(ds_name, group_name):
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.6))
     ax_ndcg, ax_bar = axes[0], axes[1]
 
-    # ── Pannello sinistro: learning curves ───────────────────────────────
+    # ── Left panel: learning curves ───────────────────────────────
     for model in MODELS_NEURAL:
         if model not in data:
             continue
@@ -161,7 +161,7 @@ def plot_dataset(ds_name, group_name):
     ax_ndcg.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.4f"))
     ax_ndcg.xaxis.set_major_locator(ticker.MaxNLocator(integer=True, nbins=8))
 
-    # ── Pannello destro: bar chart best nDCG@10 ──────────────────────────
+    # ── Right panel: bar chart best nDCG@10 ──────────────────────────
     model_names, best_vals, best_stds = [], [], []
     for model in MODELS_NEURAL:
         if model not in data:
