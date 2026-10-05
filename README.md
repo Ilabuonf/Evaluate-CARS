@@ -82,7 +82,6 @@ Evaluate-CARS/
 ├── log/                            # Run logs
 │
 ├── wand_plots.py                   # W&B learning curve generation
-├── test_real_dataset.py            # Dataset validation script
 └── requirements.txt
 ```
 
